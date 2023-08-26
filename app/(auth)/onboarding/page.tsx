@@ -1,5 +1,7 @@
 import { currentUser } from "@clerk/nextjs";
 import AccountProfile from "@/components/forms/AccountProfile";
+import { fetchUser } from "@/lib/actions/user.actions";
+import { redirect } from "next/navigation";
 
 interface UserProps {
   _id?: string;
@@ -14,7 +16,9 @@ async function Page() {
   const user = await currentUser();
   if (!user) return null; // to avoid typescript warnings
 
-  const userInfo : UserProps = {};
+  // check if user has onboarded
+  const userInfo = await fetchUser(user.id);
+  if (userInfo?.onboarded) redirect("/");
 
   const userData = {
     id: user.id,
