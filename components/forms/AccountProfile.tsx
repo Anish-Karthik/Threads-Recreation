@@ -19,6 +19,8 @@ import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { isBase64Image } from '@/lib/utils';
 import { useUploadThing } from '@/lib/hooks/uploadthing';
+import { updateUser } from '@/lib/actions/user.actions';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface UserProps {
   id: string;
@@ -41,8 +43,11 @@ interface AccountFormFieldProps {
 }
 
 const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
+
   const [files, setFiles] = useState<File[]>([]);
   const { startUpload } = useUploadThing("media");
+  const router = useRouter();
+  const pathname = usePathname();
 
   const form = useForm({
     resolver: zodResolver(UserValidation),
@@ -85,7 +90,21 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
         values.profile_photo = imgRes[0].fileUrl;
       }
     }
-    // TODO: Update user profile
+    
+    await updateUser({
+      userId: user.id,
+      username: values.username,
+      name: values.name,
+      bio: values.bio,
+      image: values.profile_photo,
+      path: pathname,
+    });
+
+    if(pathname === '/profile/edit') {
+      router.back();
+    } else {
+      router.push('/');
+    }
   }
 
   return (
@@ -170,7 +189,7 @@ function AccountTextArea({ user, form, name } : AccountFormFieldProps) {
   return (
     <FormField
       control={form.control}
-      name={"name"}
+      name={name}
       render={({ field }) => (
         <FormItem className='flex flex-col gap-3 w-full'>
           <FormLabel className='text-base-semibold text-light-2'>

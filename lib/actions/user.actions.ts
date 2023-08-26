@@ -1,17 +1,20 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import User from "../models/user.model"
-import { connectToDB } from "../mongoose"
+import User from "@/lib/models/user.model"
+import { connectToDB } from "@/lib/mongoose"
 
+interface UpdateUserProps {
+  userId: string;
+  username: string;
+  name: string;
+  image: string;
+  bio: string;
+  path: string;
+};
 
 export async function updateUser(
-  userId: string,
-  username: string,
-  name: string,
-  image: string,
-  bio: string,
-  path: string,
+  { userId, username, name, image, bio, path }: UpdateUserProps
 ): Promise<void> {
   connectToDB()
   try {
@@ -33,5 +36,20 @@ export async function updateUser(
   } catch (error: any) {
     console.log(error)
     throw new Error(`Failed to create/update user: ${error.message}`)
+  }
+}
+
+export async function fetchUser(userId: string) {
+  try {
+    connectToDB();
+
+    return await User
+      .findOne({ id: userId })
+      // .populate({
+      //   path: 'communities',
+      //   model: 'Community',
+      // })
+  } catch (error: any) {
+    throw new Error(`Failed to fetch user: ${error.message}`)
   }
 }
