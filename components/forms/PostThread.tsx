@@ -14,7 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter, usePathname } from 'next/navigation';
-import { ThreadValidation } from "@/lib/validations/threads";
+import { ThreadValidation } from "@/lib/validations/thread";
 import { createThread } from "@/lib/actions/thread.actions";
 
 const PostThread = ({ userId }: {userId: string}) => {

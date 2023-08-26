@@ -11,6 +11,13 @@ interface ThreadProps {
   communityId: string | null;
   path: string;
 }
+interface addCommentToThreadProps {
+  threadId: string;
+  commentText: string;
+  userId: string;
+  path: string;
+}
+
 
 export async function createThread({ text, author, communityId, path}: ThreadProps) {
   try {
@@ -103,4 +110,40 @@ export async function fetchThreadById(id: string) {
     console.log(error);
     throw new Error(`Failed to fetch thread: ${error.message}`)
   }
+}
+
+export async function addCommentToThread({
+  threadId,
+  commentText,
+  userId,
+  path,
+}: addCommentToThreadProps) {
+  try {
+    connectToDB();
+
+    const originalThread = await Thread.findById(threadId);
+
+    if(!originalThread) {
+      throw new Error("Thread not found");
+    }
+    
+    // create a new thread with the comment text
+    const newComment = await Thread.create({
+      text: commentText,
+      author: userId,
+      parentId: threadId,
+    });
+
+    const savedCommentThread = await newComment.save();
+
+    // add the new thread to the original thread's children
+    originalThread.children.push(savedCommentThread._id);
+
+    await originalThread.save();
+
+    revalidatePath(path);
+  } catch (error: any) {
+    throw new Error(`Failed to fetch thread: ${error.message}`)
+  }
+
 }

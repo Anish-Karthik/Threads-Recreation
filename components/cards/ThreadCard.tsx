@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react'
@@ -43,7 +44,7 @@ const ThreadCard = ({
   ThreadCardProps
 ) => {
   return (
-    <article className='flex flex-col w-full rounded-xl bg-dark-2 p-7'>
+    <article className={cn('flex flex-col w-full rounded-xl', isComment? 'px-0 xs:px-7 py-3': 'bg-dark-2 p-7')}>
       <div className='flex items-start justify-between'>
 
         <div className='flex w-full flex-1 flex-row gap-4'>
@@ -76,7 +77,7 @@ const ThreadCard = ({
                 <Image src="/assets/share.svg" alt='share' width={24} height={24} className='cursor-pointer object-contain' />
               </div>
 
-              {isComment && (
+              {!isComment && (
                 <Link href={`/thread/${id}`}>
                   <p className='mt-1 text-subtle-medium text-gray-1'>
                     {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
