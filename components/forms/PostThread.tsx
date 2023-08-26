@@ -15,8 +15,9 @@ import { z } from 'zod';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter, usePathname } from 'next/navigation';
 import { ThreadValidation } from "@/lib/validations/threads";
+import { createThread } from "@/lib/actions/thread.actions";
 
-const PostThread = ({ userId }: {userId: String}) => {
+const PostThread = ({ userId }: {userId: string}) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -27,14 +28,21 @@ const PostThread = ({ userId }: {userId: String}) => {
       accountId: userId,
     }
   });
-  async function onSubmit() {
-    // await createThread();
+  async function onSubmit(values: z.infer<typeof ThreadValidation>) {
+    await createThread({
+      text: values.thread,
+      author: userId,
+      communityId: null,
+      path: pathname,
+    });
+
+    router.push('/')
   }
 
   return (
     <Form {...form}> 
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-start gap-10">
-        <ThreadTextArea form={form} name="Thread"/>
+        <ThreadTextArea form={form} name="thread"/>
         <Button type="submit" className="bg-primary-500">
           Post Thread
         </Button>
