@@ -14,7 +14,7 @@ function Bottombar() {
     <section className='bottombar'>
       <div className='bottombar_container'>
         {sidebarLinks.map((link) => {
-          const isActive = pathname === link.route || pathname.includes(link.route);
+          const isActive = pathname === link.route;
           
           return <div>
             <Link href={link.route}

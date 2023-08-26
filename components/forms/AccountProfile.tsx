@@ -37,7 +37,6 @@ interface AccountProfileProps {
 }
 
 interface AccountFormFieldProps {
-  user: UserProps;
   form: any;
   name: string;
 }
@@ -110,10 +109,10 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-start gap-10">
-        <AccountProfilePhoto user={user} form={form} handleImageChange={handleImageChange} name='profile' />
-        <AccountInputField user={user} form={form} name='name' />
-        <AccountInputField user={user} form={form} name='username' />
-        <AccountTextArea user={user} form={form} name='bio' />
+        <AccountProfilePhoto form={form} handleImageChange={handleImageChange} name='profile' />
+        <AccountInputField form={form} name='name' />
+        <AccountInputField form={form} name='username' />
+        <AccountTextArea form={form} name='bio' />
 
         <Button type="submit" className='bg-primary-500'>Submit</Button>
       </form>
@@ -123,7 +122,7 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
 
 export default AccountProfile
 
-function AccountProfilePhoto({ user, form, handleImageChange, name } : AccountFormFieldProps & { handleImageChange: (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => void }) {
+function AccountProfilePhoto({ form, handleImageChange, name } : AccountFormFieldProps & { handleImageChange: (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => void }) {
   return (
     <FormField
           control={form.control}
@@ -156,13 +155,14 @@ function AccountProfilePhoto({ user, form, handleImageChange, name } : AccountFo
                   onChange={(e) => handleImageChange(e, field.onChange)}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
   )
 }
 
-function AccountInputField({ user, form, name } : AccountFormFieldProps) {
+function AccountInputField({ form, name } : AccountFormFieldProps) {
   return (
     <FormField
       control={form.control}
@@ -179,13 +179,14 @@ function AccountInputField({ user, form, name } : AccountFormFieldProps) {
               {...field}
             />
           </FormControl>
+          <FormMessage />
         </FormItem>
       )}
     />
   )
 }
 
-function AccountTextArea({ user, form, name } : AccountFormFieldProps) {
+function AccountTextArea({ form, name } : AccountFormFieldProps) {
   return (
     <FormField
       control={form.control}
@@ -202,6 +203,7 @@ function AccountTextArea({ user, form, name } : AccountFormFieldProps) {
               {...field}
             />
           </FormControl>
+          <FormMessage />
         </FormItem>
       )}
     />

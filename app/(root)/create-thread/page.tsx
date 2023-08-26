@@ -14,8 +14,8 @@ async function CreateThreadPage() {
   if(!userInfo?.onboarded) redirect('/onboarding');
 
   return (
-    <div>
-      <h1 className='head_text'>Create Thread</h1>
+    <div className="flex flex-col gap-8">
+      <h1 className='head-text text-left'>Create Thread</h1>
 
       <PostThread userId={userInfo._id} />
     </div>
