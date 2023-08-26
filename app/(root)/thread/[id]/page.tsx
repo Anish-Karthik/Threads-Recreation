@@ -45,16 +45,16 @@ const ThreadDetailsPage = async ({ params }: { params: { id : string }}) => {
       <div className='mt-7'>
         {thread.children.map((comment : any) => (
         <ThreadCard 
-            key={comment._id}
-            id={comment._id}
-            currentUserId={user?.id || ''}
-            parentId={comment.parentId}
-            comments={comment.children}
-            content={comment.text}
-            author={comment.author}
-            community={comment.community}
-            createdAt={comment.createdAt}
-            isComment={true}
+          key={comment._id}
+          id={comment._id}
+          currentUserId={user?.id || ''}
+          parentId={comment.parentId}
+          comments={comment.children}
+          content={comment.text}
+          author={comment.author}
+          community={comment.community}
+          createdAt={comment.createdAt}
+          isComment={true}
         />
         ))}
       </div>

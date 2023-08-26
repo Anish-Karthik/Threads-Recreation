@@ -67,7 +67,7 @@ const ThreadCard = ({
 
             <p className='mt-2 text-small-regular text-light-2'>{content}</p>
 
-            <div className='mt-5 flex flex-col gap-3'>
+            <div className={cn('mt-5 flex flex-col gap-3', isComment ? 'mb-10': '')}>
               <div className='flex gap-3.5'>
                 <Image src="/assets/heart-gray.svg" alt='heart' width={24} height={24} className='cursor-pointer object-contain' />
                 <Link href={`/thread/${id}`}>
@@ -77,7 +77,7 @@ const ThreadCard = ({
                 <Image src="/assets/share.svg" alt='share' width={24} height={24} className='cursor-pointer object-contain' />
               </div>
 
-              {!isComment && (
+              {(
                 <Link href={`/thread/${id}`}>
                   <p className='mt-1 text-subtle-medium text-gray-1'>
                     {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
