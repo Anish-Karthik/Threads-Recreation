@@ -1,10 +1,10 @@
 "use server";
 
-import { FilterQuery, SortOrder } from "mongoose";
+import { FilterQuery, SortOrder, isValidObjectId } from "mongoose";
 
-import Community from "../models/community.model";
-import Thread from "../models/thread.model";
-import User from "../models/user.model";
+import Community from "@/lib/models/community.model";
+import Thread from "@/lib/models/thread.model";
+import User from "@/lib/models/user.model";
 
 import { connectToDB } from "../mongoose";
 
@@ -49,20 +49,25 @@ export async function createCommunity(
   }
 }
 
-export async function fetchCommunityDetails(id: string) {
+export async function fetchCommunityDetails(id: string | null) {
   try {
     connectToDB();
+    if(!id) return null;
 
-    const communityDetails = await Community.findOne({ id }).populate([
-      "createdBy",
-      {
-        path: "members",
-        model: User,
-        select: "name username image _id id",
-      },
-    ]);
+    const isObjectId = isValidObjectId(id);
+    const searchId = isObjectId ? { _id: id } : { id };
 
-    return communityDetails;
+    const communityDetails = await Community.findOne(searchId).populate([
+        "createdBy",
+        {
+          path: "members",
+          model: User,
+          select: "name username image _id id",
+        },
+      ]);
+
+
+    return communityDetails ?? null;
   } catch (error) {
     // Handle any errors
     console.error("Error fetching community details:", error);

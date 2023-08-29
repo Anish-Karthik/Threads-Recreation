@@ -1,5 +1,6 @@
 
 import ThreadCard from "@/components/cards/ThreadCard";
+import { fetchCommunityDetails } from "@/lib/actions/community.actions";
 import { fetchThreads } from "@/lib/actions/thread.actions";
 import { currentUser } from "@clerk/nextjs";
 
@@ -17,7 +18,9 @@ export default async function Home() {
           <p className="no-result">No threads found.</p>
           ) : (
             <>
-              {results?.posts.map((post) => (
+              {results?.posts.map( (post) => {
+                // const community = await fetchCommunityDetails(post.community)
+                return ( 
                 <ThreadCard 
                   key={post._id}
                   id={post._id}
@@ -29,7 +32,7 @@ export default async function Home() {
                   community={post.community}
                   createdAt={post.createdAt}
                 />
-              ))}
+              )})}
             </>
         )}
       </section>

@@ -1,6 +1,8 @@
-import { cn } from '@/lib/utils';
+import { fetchCommunityDetails } from '@/lib/actions/community.actions';
+import { cn, formatDateString } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
+import { format } from 'path';
 import React from 'react'
 
 interface ThreadCardProps {
@@ -14,11 +16,7 @@ interface ThreadCardProps {
     image: string;
     name: string;
   }
-  community: {
-    id: string;
-    name: string;
-    image: string;
-  } | null;
+  community: string | null;
   createdAt: string
   comments: {
     author: {
@@ -29,7 +27,7 @@ interface ThreadCardProps {
 }
 
 
-const ThreadCard = ({
+const ThreadCard = async ({
   key,
   id,
   currentUserId,
@@ -43,6 +41,8 @@ const ThreadCard = ({
 }: 
   ThreadCardProps
 ) => {
+  console.log('Community', community)
+  const communityDetails = await fetchCommunityDetails(community ?? "");
   return (
     <article className={cn('flex flex-col w-full rounded-xl', isComment? 'px-0 xs:px-7 py-3': 'bg-dark-2 p-7')}>
       <div className='flex items-start justify-between'>
@@ -77,7 +77,7 @@ const ThreadCard = ({
                 <Image src="/assets/share.svg" alt='share' width={24} height={24} className='cursor-pointer object-contain' />
               </div>
 
-              {(
+              {(isComment && comments.length > 0) && (
                 <Link href={`/thread/${id}`}>
                   <p className='mt-1 text-subtle-medium text-gray-1'>
                     {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
@@ -87,9 +87,22 @@ const ThreadCard = ({
             </div>
           </div>
         </div>
+        {/* TODO: Delete Thread */}
+        {/* TODO: comment Logo */}
+        
       </div>
-      
-
+      {!isComment && community && (
+        <Link href={`/communities/${communityDetails.id}`} className='mt-5 flex items-center'>
+          <p className='text-subtle-medium text-gray-1'>{formatDateString(createdAt)} - {communityDetails.name} Community</p>
+          <Image 
+            src={communityDetails.image}
+            alt={communityDetails.name}
+            className='ml-1 rounded-full cursor-pointer object-cover'
+            width={14}
+            height={14}
+          />
+        </Link>
+      )}
     </article>
   )
 }
