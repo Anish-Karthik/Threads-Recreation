@@ -117,7 +117,7 @@ export async function fetchUsers({
     const usersQuery = await User.find(query)
     .sort(sortOptions)
     .skip(skipAmount)
-    .limit(pageSize).exec()
+    .limit(pageSize).exec();
 
     const totalUsersCount = await User.countDocuments(query);
 

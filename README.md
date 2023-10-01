@@ -1,7 +1,6 @@
 ## Todo
 
 <ul>
-  <li>Implement SearchBar</li>
   <li>Implement suggested profile</li>
   <li>Implement suggested communities</li>
   <li>Implement Like</li>

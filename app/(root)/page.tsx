@@ -1,17 +1,19 @@
 
 import ThreadCard from "@/components/cards/ThreadCard";
-import { fetchCommunityDetails } from "@/lib/actions/community.actions";
+import Searchbar from "@/components/shared/Searchbar";
 import { fetchThreads } from "@/lib/actions/thread.actions";
 import { currentUser } from "@clerk/nextjs";
 
 export default async function Home() {
-  const results = await fetchThreads(1, 30);
+  const results = await fetchThreads(1, 5);
   const user = await currentUser();
 
-  console.log(results);
   return (
     <div>
-      <h1 className="head-text text-left">Home</h1>
+      {/* <div className='flex items-center gap-9'> */}
+        <h1 className="head-text text-left">Home</h1>
+        {/* <Searchbar routeType='' placeHolder='Search Threads'/>
+      </div> */}
 
       <section className="mt-9 flex flex-col gap-10">
         {results?.posts.length === 0 ? (
