@@ -1,4 +1,10 @@
-## Todo
+## Own Features Added by Myself
+<ul>
+  <li>Implemented Delete Thread</li>
+  <li>Implemented Seacrh Feature</li>
+</ul>
+
+## Todo by Myself
 
 <ul>
   <li>Implement suggested profile</li>

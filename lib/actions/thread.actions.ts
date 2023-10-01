@@ -161,3 +161,35 @@ export async function addCommentToThread({
   }
 
 }
+
+export async function deleteThread(threadId: string, path: string) {
+  try {
+    connectToDB();
+
+    const thread = await Thread.findById(threadId);
+
+    if(!thread) {
+      throw new Error("Thread not found");
+    }
+    const usedId = thread.author;
+    
+
+    // remove the thread from the community's threads
+    await Community.findOneAndUpdate(
+      { threads: threadId },
+      {
+        $pull: { threads: threadId },
+      }
+    );
+    await Thread.findByIdAndDelete(threadId);
+
+    // remove the thread from the user's threads
+    await User.findByIdAndUpdate(usedId, {
+      $pull: { threads: threadId },
+    });
+
+    revalidatePath(path);
+  } catch (error: any) {
+    throw new Error(`Failed to fetch thread: ${error.message}`)
+  }
+}
