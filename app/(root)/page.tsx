@@ -5,7 +5,7 @@ import { fetchThreads } from "@/lib/actions/thread.actions";
 import { currentUser } from "@clerk/nextjs";
 
 export default async function Home() {
-  const results = await fetchThreads(1, 5);
+  const results = await fetchThreads(1, 25);
   const user = await currentUser();
 
   return (

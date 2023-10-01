@@ -5,7 +5,6 @@
 </ul>
 
 ## Todo by Myself
-
 <ul>
   <li>Implement suggested profile</li>
   <li>Implement suggested communities</li>

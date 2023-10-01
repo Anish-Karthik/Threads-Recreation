@@ -42,7 +42,6 @@ const ThreadCard = async ({
 }: 
   ThreadCardProps
 ) => {
-  console.log('Community', community)
   const communityDetails = await fetchCommunityDetails(community ?? "");
 
 
@@ -80,20 +79,36 @@ const ThreadCard = async ({
                 <Image src="/assets/share.svg" alt='share' width={24} height={24} className='cursor-pointer object-contain' />
                 <DeleteThread id={id} author={author.id} currentUserId={currentUserId} />
               </div>
-
-              {(isComment && comments.length > 0) && (
-                <Link href={`/thread/${id}`}>
+              {/* Commented user Profiles */}
+              {(!isComment && comments.length > 0) && (
+                <Link href={`/thread/${id}`} className='flex flex-start gap-4'>
                   <p className='mt-1 text-subtle-medium text-gray-1'>
                     {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
                   </p>
+                  {comments.length > 0 && (
+                    <div className='flex items-center'>
+                      { 
+                      [... new Set(comments.map((item) => item.author))]
+                      .slice(0,3).map((author, index) => (
+                        <Image
+                          key={index}
+                          src={author.image}
+                          alt={`user_${index}`}
+                          width={28}
+                          height={28}
+                          className={`${
+                            index !== 0 && "-ml-2"
+                          } rounded-full object-cover`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </Link>
               )}
             </div>
           </div>
         </div>
-        {/* TODO: Delete Thread */}
-        {/* TODO: comment Logo */}
-        
+
       </div>
       {!isComment && community && (
         <Link href={`/communities/${communityDetails.id}`} className='mt-5 flex items-center'>
