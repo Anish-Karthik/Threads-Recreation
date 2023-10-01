@@ -20,7 +20,7 @@ const CommunityPage = async ({
   const result = await fetchCommunities({
     searchString: searchParams?.q || '',
     pageNumber: searchParams?.page ? +searchParams.page : 1,
-    pageSize: 2,
+    pageSize: 4,
   });
 
   return (
@@ -29,7 +29,7 @@ const CommunityPage = async ({
         <h1 className='head-text'>Search</h1>
         <Searchbar routeType='communities'/>
       </div>
-      <div className='mt-14 flex justify-evenly flex-wrap gap-9'>
+      <div className='mt-14 flex justify-evenly flex-wrap gap-4'>
         {!result.communities || result.communities.length === 0 ? (
           <p className='no-result'>No Communities</p>
         ) : (
