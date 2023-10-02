@@ -1,17 +1,39 @@
-## Own Features Added by Myself
+## SubTasks Completed
 <ul>
-  <li>Implemented Delete Thread</li>
-  <li>Implemented Seacrh Feature</li>
+  <li>Implemented Auth using clerk</li>
+  <li>Implemented Topbar</li>
+  <li>Implemented Left Sidebar for Desktop navigation</li>
+  <li>Implemented Right Sidebar</li>
+  <li>Implemented bottom NavBar for Mobile navigation</li>
+  <li>Implemented Onboarding Page UI</li>
+  <li>Implemented UPLOADER using UploadThing webhook for onboarding</li>
+  <li>Implemented Home Page</li>
+  <li>Implemented MongoDB Connection using Mongoose ORM</li>
+  <li>Created Schema for User & Threads</li>
+  <li>Server Actions for Thread(Create,Get,FetchAll)</li>
+  <li>Server Actions for User(Create,Get,FetchAll)</li>
+  <li>Created Thread Card and Thread Page(Home)</li>
+  <li>Added Comment/Reply to Thread</li>
+  <li>Created Profile Card and Profile Page</li>
+  <li>Added Activity Page for replies</li>
+  <h4><b>Community Additional Features</b></h4>
+  <ul> 
+    <li>Added Clerk Organizations and webhooks</li>
+    <li>Server Actions for Community CRUD</li>
+    <li>Created Community Card and Community Page</li>
+  </ul>
+  <br>
+  <li>Added Search Actions and Page for all</li>
+  <li>Implemented suggested profile</li>
+  <li>Implemented suggested communities</li>
+  <li>Implemented Like</li>
 </ul>
 
-## Todo by Myself
+## Todo
 <ul>
-  <li>Implement suggested profile</li>
-  <li>Implement suggested communities</li>
-  <li>Implement Like</li>
   <li>Implement share</li>
   <li>Implement repost</li>
-  
+  <li>Activity Notification for like</li>
   <li>Make community without clerk</li>
   <li>Use prisma ORM</li>
   <li>Use TRPC/GraphQL instead of REST</li>
