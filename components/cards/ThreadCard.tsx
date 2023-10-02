@@ -65,9 +65,15 @@ const ThreadCard = async ({
           </div>
 
           <div className='flex w-full flex-col'>
-            <Link href={`/profile/${author.id}`} className='w-fit'>
-              <h4 className='cursor-pointer text-base-semibold text-light-2'>{author.name}</h4>
-            </Link>
+            <div className='flex flex-row justify-between items-center'>
+              <Link href={`/profile/${author.id}`} className='w-fit'>
+                <h4 className='cursor-pointer text-base-semibold text-light-2'>{author.name}</h4>
+              </Link>
+              <div className='flex gap-2'>
+                <DeleteThread id={id} author={author.id} currentUserId={currentUserId} />
+                {currentUserId && currentUserId==author?.id &&<Image src="/assets/edit.svg" alt='edit' width={24} height={24} className='cursor-pointer object-contain' />}
+              </div>
+            </div>
 
             <p className='mt-2 text-small-regular text-light-2'>{content}</p>
 
@@ -79,8 +85,7 @@ const ThreadCard = async ({
                 </Link>
                 <Image src="/assets/repost.svg" alt='repost' width={24} height={24} className='cursor-pointer object-contain' />
                 <Image src="/assets/share.svg" alt='share' width={24} height={24} className='cursor-pointer object-contain' />
-                {/* <Image src="/assets/edit.svg" alt='edit' width={24} height={24} className='cursor-pointer object-contain' /> */}
-                <DeleteThread id={id} author={author.id} currentUserId={currentUserId} />
+                
               </div>
               {/* Commented user Profiles */}
               {(!isComment && comments.length > 0) && (

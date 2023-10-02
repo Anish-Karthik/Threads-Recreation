@@ -22,7 +22,7 @@ const CommunityPage = async ({
         <h1 className='head-text'>Search</h1>
         <Searchbar routeType='communities'/>
       </div>
-      <div className='mt-14 flex justify-evenly flex-wrap gap-4'>
+      <div className='mt-14 flex justify-evenly flex-wrap gap-3'>
         {!result.communities || result.communities.length === 0 ? (
           <p className='no-result'>No Communities</p>
         ) : (

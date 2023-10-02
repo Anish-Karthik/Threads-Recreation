@@ -139,9 +139,14 @@ export async function getActivity(userId: string) {
     const userThreads = await Thread.find({ author: userId }).exec()
 
     //  find all comments by user
-    const childThreadIds = userThreads.reduce((acc, userThread) => {
-      return acc.concat(userThread.children)
-    }, [])
+    // const childThreadIds = userThreads.reduce((acc, userThread) => {
+    //   return acc.concat(userThread.children)
+    // }, [])
+    
+    const childThreadIds = userThreads.map(userThread => {
+      return userThread.children
+    }).flat()
+    
 
     const replies = await Thread.find({ 
       _id: { $in: childThreadIds },
