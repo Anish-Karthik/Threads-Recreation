@@ -291,8 +291,27 @@ export async function isLikedThread(threadId: string, userId: string) {
     if(!thread) {
       throw new Error("Thread not found");
     }
+    if(!user) {
+      throw new Error("User not found");
+    }
 
-    return {isLiked: thread.likes.includes(user._id), likeCount: thread.likes.length};
+    return thread.likes.includes(user._id);
+  } catch (error: any) {
+    throw new Error(`Failed to fetch thread: ${error.message}`)
+  }
+}
+
+export async function fetchLikeCount(threadId: string) {
+  try {
+    connectToDB();
+
+    const thread = await Thread.findById(threadId);
+
+    if(!thread) {
+      throw new Error("Thread not found");
+    }
+
+    return thread.likes.length;
   } catch (error: any) {
     throw new Error(`Failed to fetch thread: ${error.message}`)
   }

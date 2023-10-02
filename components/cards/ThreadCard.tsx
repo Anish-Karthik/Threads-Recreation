@@ -2,10 +2,9 @@ import { fetchCommunityDetails } from '@/lib/actions/community.actions';
 import { cn, formatDateString } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import { format } from 'path';
 import React from 'react'
 import DeleteThread from '../actions/DeleteThread';
-import { fetchLikedThreads, isLikedThread } from '@/lib/actions/thread.actions';
+import { fetchLikeCount, isLikedThread } from '@/lib/actions/thread.actions';
 import LikeThread from '../actions/LikeThread';
 
 interface ThreadCardProps {
@@ -45,7 +44,8 @@ const ThreadCard = async ({
   ThreadCardProps
 ) => {
   const communityDetails = await fetchCommunityDetails(community ?? "");
-  const {isLiked, likeCount }= await isLikedThread(id, currentUserId);
+  const likeCount = await fetchLikeCount(id);
+  const isLiked = currentUserId && await isLikedThread(id, currentUserId);
 
   return (
     <article className={cn('flex flex-col w-full rounded-xl', isComment? 'px-0 xs:px-7 py-3': 'bg-dark-2 p-7')}>
@@ -79,6 +79,7 @@ const ThreadCard = async ({
                 </Link>
                 <Image src="/assets/repost.svg" alt='repost' width={24} height={24} className='cursor-pointer object-contain' />
                 <Image src="/assets/share.svg" alt='share' width={24} height={24} className='cursor-pointer object-contain' />
+                {/* <Image src="/assets/edit.svg" alt='edit' width={24} height={24} className='cursor-pointer object-contain' /> */}
                 <DeleteThread id={id} author={author.id} currentUserId={currentUserId} />
               </div>
               {/* Commented user Profiles */}

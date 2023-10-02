@@ -1,7 +1,9 @@
 "use client";
 
 import { toggleLikeThread } from '@/lib/actions/thread.actions';
+import { useAuth } from '@clerk/nextjs';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
 interface LikeThreadProps {
@@ -15,8 +17,10 @@ interface LikeThreadProps {
 const LikeThread = ({isLiked, threadId, userId, likeCount = 0 , path}: LikeThreadProps) => {
   const [liked, setLiked] = useState<boolean>(isLiked);
   const [likes, setLikes] = useState<number>(likeCount);
-
+  const user = useAuth();
+  const router = useRouter();
   const toggleHeart = async () => {
+    if(!user || !user.userId) return router.push('/sign-in');
     const result = await toggleLikeThread(threadId, userId, path);
     if(result == undefined) return console.log('error');
     setLiked(result.isLiked);
