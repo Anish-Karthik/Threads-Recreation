@@ -209,11 +209,47 @@ export async function deleteThread(threadId: string, path: string) {
   }
 }
 
-export async function LikeThread(threadId: string, userId: string, path: string) {
+export async function fetchLikedThreads(userId: string) {
+  try {
+    connectToDB();
+
+    const user = await User.findById(userId);
+
+    if(!user) {
+      throw new Error("User not found");
+    }
+
+    const likedThreads = await Thread.find({
+      _id: { $in: user.likedThreads },
+    })
+      .populate({
+        path: "author",
+        model: "User",
+        select: "_id id name parentId image",
+      })
+      .populate({
+        path: "children",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "_id id name parentId image",
+        },
+      })
+      .exec();
+
+    return likedThreads;
+  } catch (error: any) {
+    throw new Error(`Failed to fetch thread: ${error.message}`)
+  }
+}
+
+export async function toggleLikeThread(threadId: string, userId: string, path: string) {
   try {
     connectToDB();
 
     const thread = await Thread.findById(threadId);
+    // await User.updateMany({}, {$set: {likedThreads: []}})
+    // await Thread.updateMany({}, {$set: {likes: []}})
 
     if(!thread) {
       throw new Error("Thread not found");
@@ -224,45 +260,39 @@ export async function LikeThread(threadId: string, userId: string, path: string)
     if(!user) {
       throw new Error("User not found");
     }
+    let isLiked = false;
+    if (user.likedThreads.includes(threadId)) {
+      user.likedThreads.pull(threadId);
+      thread.likes.pull(user._id);
+      isLiked = false;
+    } else {
+      user.likedThreads.push(threadId);
+      thread.likes.push(user._id);
+      isLiked = true;
+    }
 
-    user.likedThreads.push(threadId);
-
-    // add the user to the thread's likes
-    thread.likes.push(userId);
     await thread.save();
-
-    
-
+    await user.save();
     revalidatePath(path);
+    return {isLiked, likes: thread.likes.length};
   } catch (error: any) {
-    throw new Error(`Failed to fetch thread: ${error.message}`)
+    console.error(`Failed to fetch thread: ${error.message}`)
   }
 }
 
-export async function UnlikeThread(threadId: string, userId: string, path: string) {
+export async function isLikedThread(threadId: string, userId: string) {
   try {
     connectToDB();
 
     const thread = await Thread.findById(threadId);
 
+    const user = await fetchUser(userId);
+
     if(!thread) {
       throw new Error("Thread not found");
     }
-    // remove the thread from the user's likedThreads
-    const user = await fetchUser(userId);
 
-    if(!user) {
-      throw new Error("User not found");
-    }
-
-    user.likedThreads.pull(threadId);
-
-    // remove the user from the thread's likes
-    thread.likes.pull(userId);
-
-    await thread.save();
-
-    revalidatePath(path);
+    return {isLiked: thread.likes.includes(user._id), likeCount: thread.likes.length};
   } catch (error: any) {
     throw new Error(`Failed to fetch thread: ${error.message}`)
   }

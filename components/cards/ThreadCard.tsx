@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { format } from 'path';
 import React from 'react'
 import DeleteThread from '../actions/DeleteThread';
+import { fetchLikedThreads, isLikedThread } from '@/lib/actions/thread.actions';
+import LikeThread from '../actions/LikeThread';
 
 interface ThreadCardProps {
   key: string;
@@ -43,7 +45,7 @@ const ThreadCard = async ({
   ThreadCardProps
 ) => {
   const communityDetails = await fetchCommunityDetails(community ?? "");
-
+  const {isLiked, likeCount }= await isLikedThread(id, currentUserId);
 
   return (
     <article className={cn('flex flex-col w-full rounded-xl', isComment? 'px-0 xs:px-7 py-3': 'bg-dark-2 p-7')}>
@@ -71,7 +73,7 @@ const ThreadCard = async ({
 
             <div className={cn('mt-5 flex flex-col gap-3', isComment ? 'mb-10': '')}>
               <div className='flex gap-3.5'>
-                <Image src="/assets/heart-gray.svg" alt='heart' width={24} height={24} className='cursor-pointer object-contain' />
+                <LikeThread threadId={id} userId={currentUserId} isLiked={isLiked} path='' likeCount={likeCount} />
                 <Link href={`/thread/${id}`} className='flex items-center'>
                   <Image src="/assets/reply.svg" alt='reply' width={24} height={24} className='cursor-pointer object-contain' />
                 </Link>
