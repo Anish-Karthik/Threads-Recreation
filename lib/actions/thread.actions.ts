@@ -5,6 +5,7 @@ import { connectToDB } from "@/lib/mongoose";
 import User from "@/lib/models/user.model";
 import { revalidatePath } from "next/cache";
 import Community from "@/lib/models/community.model";
+import { fetchUser } from "./user.actions";
 
 interface ThreadProps {
   text: string;
@@ -172,8 +173,22 @@ export async function deleteThread(threadId: string, path: string) {
       throw new Error("Thread not found");
     }
     const usedId = thread.author;
-    
+    // remove all the thread's children recursively
+    const deleteChildren = async (threadId: string) => {
+      const thread = await Thread.findById(threadId);
+      if(!thread) {
+        throw new Error("Thread not found");
+      }
+      if (thread.children.length > 0) {
+        for (const child of thread.children) {
+          await deleteChildren(child);
+        }
+      }
+      await Thread.findByIdAndDelete(threadId);
+    };
 
+    await deleteChildren(threadId);
+    
     // remove the thread from the community's threads
     await Community.findOneAndUpdate(
       { threads: threadId },
@@ -187,6 +202,65 @@ export async function deleteThread(threadId: string, path: string) {
     await User.findByIdAndUpdate(usedId, {
       $pull: { threads: threadId },
     });
+
+    revalidatePath(path);
+  } catch (error: any) {
+    throw new Error(`Failed to fetch thread: ${error.message}`)
+  }
+}
+
+export async function LikeThread(threadId: string, userId: string, path: string) {
+  try {
+    connectToDB();
+
+    const thread = await Thread.findById(threadId);
+
+    if(!thread) {
+      throw new Error("Thread not found");
+    }
+    // add the thread to the user's likedThreads
+    const user = await fetchUser(userId);
+
+    if(!user) {
+      throw new Error("User not found");
+    }
+
+    user.likedThreads.push(threadId);
+
+    // add the user to the thread's likes
+    thread.likes.push(userId);
+    await thread.save();
+
+    
+
+    revalidatePath(path);
+  } catch (error: any) {
+    throw new Error(`Failed to fetch thread: ${error.message}`)
+  }
+}
+
+export async function UnlikeThread(threadId: string, userId: string, path: string) {
+  try {
+    connectToDB();
+
+    const thread = await Thread.findById(threadId);
+
+    if(!thread) {
+      throw new Error("Thread not found");
+    }
+    // remove the thread from the user's likedThreads
+    const user = await fetchUser(userId);
+
+    if(!user) {
+      throw new Error("User not found");
+    }
+
+    user.likedThreads.pull(threadId);
+
+    // remove the user from the thread's likes
+    thread.likes.pull(userId);
+
+    await thread.save();
 
     revalidatePath(path);
   } catch (error: any) {

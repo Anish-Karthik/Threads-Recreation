@@ -1,10 +1,15 @@
 
 import ThreadCard from "@/components/cards/ThreadCard";
+import Pagination from "@/components/shared/Pagination";
 import Searchbar from "@/components/shared/Searchbar";
 import { fetchThreads } from "@/lib/actions/thread.actions";
 import { currentUser } from "@clerk/nextjs";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) {
   const results = await fetchThreads(1, 25);
   const user = await currentUser();
 
