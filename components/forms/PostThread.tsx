@@ -58,10 +58,11 @@ export default PostThread
 interface ThreadFormFieldProps {
   form: any;
   name: string;
+  defaultValue?: string;
 }
 
 
-function ThreadTextArea({ form, name } : ThreadFormFieldProps) {
+export function ThreadTextArea({ form, name, defaultValue } : ThreadFormFieldProps) {
   return (
     <FormField
       control={form.control}
@@ -75,6 +76,7 @@ function ThreadTextArea({ form, name } : ThreadFormFieldProps) {
             <Textarea
               rows={15}
               className='account-form_input no-focus'
+              defaultValue={defaultValue}
               {...field}
             />
           </FormControl>

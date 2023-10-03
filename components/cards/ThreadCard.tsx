@@ -6,6 +6,8 @@ import React from 'react'
 import DeleteThread from '../actions/DeleteThread';
 import { fetchLikeCount, isLikedThread } from '@/lib/actions/thread.actions';
 import LikeThread from '../actions/LikeThread';
+import EditThread from '../forms/EditThread';
+import { redirect } from 'next/navigation';
 
 interface ThreadCardProps {
   key: string;
@@ -71,7 +73,11 @@ const ThreadCard = async ({
               </Link>
               <div className='flex gap-2'>
                 <DeleteThread id={id} author={author.id} currentUserId={currentUserId} />
-                {currentUserId && currentUserId==author?.id &&<Image src="/assets/edit.svg" alt='edit' width={24} height={24} className='cursor-pointer object-contain' />}
+                {currentUserId && currentUserId==author?.id && 
+                  <Link href={`/thread/${id}/edit`}>
+                    <Image src="/assets/edit.svg" alt='edit' width={24} height={24} className='cursor-pointer object-contain'/>
+                  </Link>
+                }
               </div>
             </div>
 

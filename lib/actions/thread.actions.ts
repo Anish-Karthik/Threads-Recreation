@@ -217,6 +217,24 @@ export async function deleteThread(threadId: string, path: string) {
   }
 }
 
+export async function editThread({ threadId, text, path }:{ threadId: string, text: string, path: string }) {
+  try {
+    connectToDB();
+
+    const thread = await Thread.findByIdAndUpdate(threadId, {
+      text,
+    });
+
+    if(!thread) {
+      throw new Error("Thread not found");
+    }
+
+    revalidatePath(path);
+  } catch (error: any) {
+    throw new Error(`Failed to fetch thread: ${error.message}`)
+  }
+}
+
 export async function fetchLikedThreads(userId: string) {
   try {
     connectToDB();

@@ -26,7 +26,9 @@
   <li>Added Search Actions and Page for all</li>
   <li>Implemented suggested profile</li>
   <li>Implemented suggested communities</li>
-  <li>Implemented Like</li>
+  <li>Implemented delete thread</li>
+  <li>Implemented Like thread</li>
+  <li>Implemented Edit thread</li>
 </ul>
 
 ## Todo
