@@ -35,6 +35,14 @@ export async function createThread({ text, author, communityId, path}: ThreadPro
       author,
       community: communityIdObject._id ?? null, // Assign communityId if provided, or leave it null for personal account
     });
+    if(!author) {
+      console.log("No author provided");
+      throw new Error("No author provided");
+    }
+    if(!createdThread) {
+      console.log("Failed to create thread");
+      throw new Error("Failed to create thread");
+    }
 
     // Update User model
     await User.findByIdAndUpdate(author, {

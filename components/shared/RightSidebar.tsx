@@ -43,7 +43,7 @@ async function RightSidebar() {
           {users?.users.map((user) => (
             <UserCard
               key={user.id}
-              id={user._id}
+              id={user.id}
               name={user.name}
               username={user.username}
               imgUrl={user.image}
