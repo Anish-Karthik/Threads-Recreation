@@ -27,7 +27,7 @@ export default async function Home({
             <>
               {results?.posts.map( (post) => {
                 // const community = await fetchCommunityDetails(post.community)
-                return ( 
+                return ( (post.parentId === undefined || post.parentId === null) &&
                 <ThreadCard 
                   key={post.id}
                   id={post.id}

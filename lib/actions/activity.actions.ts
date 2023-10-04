@@ -58,35 +58,35 @@ export async function getActivityRepliedToUser(userId: string) {
 
 export async function getActivityLikedToUser(userId: string) { 
   try {
-    // find threads whose parent is not null, ans select only parentThreads
-    // const likedThreadIds = await User.findById(userId, {
-    //   likedThreads: 1,
-    //   _id: 0,
-    // }).exec();
-    let likedThreadIds = (await prismadb.users.findUnique({
+    // find users who liked the user's threads
+    if (!userId) {
+      throw new Error("User not found");
+    }
+
+    let likedThreads = (await prismadb.users.findUnique({
       where: {
         id: userId,
       },
-      select: {
-        likedThreadIds: true,
+      include: {
+        threads: {
+          include: {
+            likedBy: true,
+          }
+        }
       },
     }));
 
-    if(!likedThreadIds) {
+    if(!likedThreads) {
       return [];
     }
 
-    const liked = await prismadb.threads.findMany({
-      where: {
-        id: { in: likedThreadIds.likedThreadIds },
-      },
-      include: {
-        author: true,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-    });
+    let liked = likedThreads.threads.map((thread) => {
+      return thread.likedBy.map((user) => {
+          return {id: thread.id, author: user};
+        }
+      );
+    }).flat();
+
 
 
     return liked || [];

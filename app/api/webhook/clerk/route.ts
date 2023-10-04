@@ -79,7 +79,10 @@ export const POST = async (request: Request) => {
         "org bio",
         created_by
       );
-
+      console.log(
+        "********************************************************************************created",
+        evnt?.data
+      );
       return NextResponse.json({ message: "User created" }, { status: 201 });
     } catch (err) {
       console.log(err);

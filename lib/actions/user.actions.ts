@@ -12,15 +12,20 @@ type UpdateUserProps = {
   path: string;
 };
 
-export async function updateUser(
-  { userId, username, name, image, bio, path }: UpdateUserProps
-): Promise<void> {
+export async function updateUser({
+  userId,
+  username,
+  name,
+  image,
+  bio,
+  path,
+}: UpdateUserProps): Promise<void> {
   try {
-    await prismadb.users.update({
+    await prismadb.users.upsert({
       where: {
         uid: userId,
       },
-      data: {
+      update: {
         username: username.toLowerCase(),
         name,
         image,
@@ -28,20 +33,29 @@ export async function updateUser(
         onboarded: true,
         updatedAt: new Date(),
       },
+      create: {
+        uid: userId,
+        username: username.toLowerCase(),
+        name,
+        image,
+        bio,
+        onboarded: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     });
 
-    if (path === '/profile/edit') {
-      revalidatePath(path)
+    if (path === "/profile/edit") {
+      revalidatePath(path);
     }
   } catch (error: any) {
-    console.log(error)
-    throw new Error(`Failed to create/update user: ${error.message}`)
+    console.log(error);
+    throw new Error(`Failed to create/update user: ${error.message}`);
   }
 }
 
 export async function fetchUser(userId: string) {
   try {
-
     return await prismadb.users.findUnique({
       where: {
         uid: userId,
@@ -52,15 +66,13 @@ export async function fetchUser(userId: string) {
         likedThreads: true,
       },
     });
-
   } catch (error: any) {
-    throw new Error(`Failed to fetch user: ${error.message}`)
+    throw new Error(`Failed to fetch user: ${error.message}`);
   }
 }
 
 export async function fetchUserPosts(userId: string) {
   try {
-
     // TODO: populate communities
     // const threads = await User
     //   .findOne({ id: userId })
@@ -95,33 +107,33 @@ export async function fetchUserPosts(userId: string) {
             community: true,
             author: true,
           },
-        }
-      }
+        },
+      },
     });
 
-    return threads
+    return threads;
   } catch (error: any) {
-    throw new Error(`Failed to fetch user posts: ${error.message}`)
+    throw new Error(`Failed to fetch user posts: ${error.message}`);
   }
 }
 
 export async function fetchUsers({
   userId,
-  searchString = '',
+  searchString = "",
   pageNumber = 1,
   pageSize = 20,
-  sortBy = 'desc',  
-} : {
-  userId: string,
-  searchString?: string,
-  pageNumber?: number,
-  pageSize?: number,
-  sortBy?: 'asc' | 'desc',
+  sortBy = "desc",
+}: {
+  userId: string;
+  searchString?: string;
+  pageNumber?: number;
+  pageSize?: number;
+  sortBy?: "asc" | "desc";
 }) {
   try {
     const skipAmount = (pageNumber - 1) * pageSize;
 
-    const regex = new RegExp(searchString, 'i');
+    const regex = new RegExp(searchString, "i");
 
     // const query: FilterQuery<typeof User> = {
     //   id: { $ne: userId },
@@ -137,52 +149,45 @@ export async function fetchUsers({
     // in Prisma
     type QueryType = {
       NOT: {
-        uid: string,
-        OR?: {
-          id: string,
-        }[],
-      },
+        uid: string;
+      };
       OR?: [
         {
           name: {
-            contains: string,
-            mode: 'insensitive',
-          },
-        }, {
-          username: {
-            contains: string,
-            mode: 'insensitive',
-          },
+            contains: string;
+            mode: "insensitive";
+          };
         },
-      ],
-    }
+        {
+          username: {
+            contains: string;
+            mode: "insensitive";
+          };
+        }
+      ];
+    };
 
     const query: QueryType = {
       NOT: {
         uid: userId,
-        OR: [{
-          id: userId,
-        }],
       },
-    }
-    if(searchString.trim() !== '') {
-      
-      query.OR= [
+    };
+    if (searchString.trim() !== "") {
+      query.OR = [
         {
           name: {
             contains: searchString,
-            mode: 'insensitive',
+            mode: "insensitive",
           },
         },
         {
           username: {
             contains: searchString,
-            mode: 'insensitive',
+            mode: "insensitive",
           },
         },
       ];
     }
-
 
     // const sortOptions = { createdAt: sortBy }
 
@@ -214,7 +219,6 @@ export async function fetchUsers({
     const isNext = totalUsersCount > skipAmount + users.length;
     return { users, isNext };
   } catch (error: any) {
-    throw new Error(`Failed to fetch users: ${error.message}`)
+    throw new Error(`Failed to fetch users: ${error.message}`);
   }
 }
-

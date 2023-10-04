@@ -22,11 +22,11 @@ model users {
   threads threads[] // author
 
   likedThreads   threads[] @relation("LikedThread", fields: [likedThreadIds], references: [id]) // likedBy
-  likedThreadIds String[]  @unique @db.ObjectId
+  likedThreadIds String[]   @db.ObjectId
 
   communities         communities[]
   createdCommunities  communities[] @relation("Member", fields: [createdCommunityIds], references: [id])
-  createdCommunityIds String[]      @unique @db.ObjectId
+  createdCommunityIds String[]       @db.ObjectId
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @default(now())
 }
@@ -37,17 +37,17 @@ model threads {
   text String
 
   author   users  @relation(fields: [authorId], references: [id]) //thread
-  authorId String @unique @db.ObjectId
+  authorId String @db.ObjectId
 
   community   communities? @relation(fields: [communityId], references: [id]) //threads user
-  communityId String?      @unique @db.ObjectId
+  communityId String?      @db.ObjectId
 
   likedBy    users[]  @relation("LikedThread", fields: [likedByIds], references: [id])
-  likedByIds String[] @unique @db.ObjectId
+  likedByIds String[]  @db.ObjectId
 
   children threads[] @relation("Comment")
   parent   threads?  @relation("Comment", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  parentId String?   @unique @db.ObjectId
+  parentId String?   @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
@@ -62,12 +62,12 @@ model communities {
   bio      String
 
   createdBy   users  @relation(fields: [createdById], references: [id])
-  createdById String @unique @db.ObjectId
+  createdById String @db.ObjectId
 
   threads threads[] //community
 
   members    users[]  @relation("Member", fields: [membersIds], references: [id]) //community
-  membersIds String[] @unique @db.ObjectId
+  membersIds String[]  @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
