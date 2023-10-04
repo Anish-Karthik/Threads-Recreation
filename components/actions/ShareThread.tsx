@@ -31,14 +31,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu"
-
-import { Button } from "@/components/ui/button"
 import Link from 'next/link'
 
 
@@ -48,7 +40,6 @@ const ShareThread = ({ threadId }: {threadId?: string}) => {
   const baseUrl = window.location.href.replace(pathname, '/');
   const curentUrl = 'thread/' + threadId;
   const handleCopy = () => {
-    // getbaseurl from window.location.href
     try {
       
       navigator.clipboard.writeText(baseUrl+curentUrl);
@@ -57,14 +48,6 @@ const ShareThread = ({ threadId }: {threadId?: string}) => {
       toast.error('Failed to copy link')
     }
   }
-    const triggerRightClick = (id: string) => {
-      const element = document.getElementById(id)
-      if (element) {
-        // trigger right click
-        element.dispatchEvent(new CustomEvent('contextmenu', { bubbles: true, cancelable: true }) );
-
-      }
-    }
     
   return (
     <Dialog>
@@ -110,6 +93,16 @@ export default ShareThread
 function ShareThreadViaThirdParty({url}: {url: string}) {
   const pathname = usePathname();
   const baseUrl = window.location.href.replace(pathname, '/');
+
+  const handleCopy = () => {
+    try {
+      
+      navigator.clipboard.writeText(baseUrl+url);
+      toast.success('Link copied')
+    } catch (error) {
+      toast.error('Failed to copy link')
+    }
+  }
   return (
     <DialogContent className='bg-dark-2 text-light-2 max-w-[21rem] sm:max-w-sm'>
       <DialogHeader className='!max-w-[18rem] sm:!max-w-[21rem]'>
@@ -122,7 +115,7 @@ function ShareThreadViaThirdParty({url}: {url: string}) {
                 <MessageSquareIcon/>
                 <p className='!w-[80%] !overflow-hidden !overflow-ellipsis'>{url}</p>
               </div>
-              <div className='flex justify-start items-center gap-1'>
+              <div className='flex justify-start items-center gap-1' onClick={handleCopy}>
                 <Link2Icon className="mr-2 h-4 w-4" />
               <span className='text-small-medium' >Copy Link</span>
               </div>
