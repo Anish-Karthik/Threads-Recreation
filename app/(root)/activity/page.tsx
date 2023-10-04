@@ -27,7 +27,7 @@ const ActivityPage = async () => {
         {replies.length > 0 && (
           <>
 
-            {replies.map((activity: any, ind: number) => (
+            {replies.map((activity, ind) => (
               <Link key={ind} href={`/thread/${activity.parentId}`}>
                 <article className='activity-card'>
                   <Image src={activity.author.image} alt='user' width={20} height={20} className='rounded-full object-cover'/>
@@ -45,7 +45,7 @@ const ActivityPage = async () => {
           
         ) || LikedThreads.length > 0 ? (
           <>
-            {LikedThreads.map((activity: any, ind: number) => (
+            {LikedThreads.map((activity, ind) => (
               <Link key={ind} href={`/thread/${activity.id}`}>
                 <article className='activity-card'>
                   <Image src={activity.author.image} alt='user' width={20} height={20} className='rounded-full object-cover'/>
