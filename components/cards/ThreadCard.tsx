@@ -5,9 +5,8 @@ import Link from 'next/link';
 import React from 'react'
 import DeleteThread from '../actions/DeleteThread';
 import { fetchLikeCount, isLikedThread } from '@/lib/actions/thread.actions';
-import LikeThread from '../actions/LikeThread';
-import EditThread from '../forms/EditThread';
-import { redirect } from 'next/navigation';
+import LikeThread from '../actions/LikeThread';;
+import ShareThread from '../actions/ShareThread';
 
 interface ThreadCardProps {
   key: string;
@@ -90,7 +89,7 @@ const ThreadCard = async ({
                   <Image src="/assets/reply.svg" alt='reply' width={24} height={24} className='cursor-pointer object-contain' />
                 </Link>
                 <Image src="/assets/repost.svg" alt='repost' width={24} height={24} className='cursor-pointer object-contain' />
-                <Image src="/assets/share.svg" alt='share' width={24} height={24} className='cursor-pointer object-contain' />
+                <ShareThread threadId={id} />
                 
               </div>
               {/* Commented user Profiles */}

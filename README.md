@@ -29,11 +29,11 @@
   <li>Implemented delete thread</li>
   <li>Implemented Like thread</li>
   <li>Implemented Edit thread</li>
+  <li>Implemented share</li>
 </ul>
 
 ## Todo
 <ul>
-  <li>Implement share</li>
   <li>Implement repost</li>
   <li>Activity Notification for like</li>
   <li>Make community without clerk</li>

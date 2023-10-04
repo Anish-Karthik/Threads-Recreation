@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 
 import '../globals.css'
 import { Topbar, Bottombar, LeftSidebar, RightSidebar } from '@/components/shared/'
+import { ToasterProvider } from '@/components/shared/ToastProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,12 +23,14 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={inter.className}>
+          <ToasterProvider />
           <Topbar />
           <main className='flex flex-row'>
             <LeftSidebar />
             
             <section className='main-container'>
               <div className='w-full max-w-4xl'>
+                
                 {children}
               </div>
             </section>
