@@ -1,5 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link';
 
 interface ProfileHeaderProps {
   accountId: string;
@@ -9,6 +10,7 @@ interface ProfileHeaderProps {
   imgUrl: string;
   bio: string;
   type?: 'User' | 'Community';
+  editable?: boolean;
 }
 
 const ProfileHeader = ({
@@ -19,24 +21,31 @@ const ProfileHeader = ({
   imgUrl,
   bio,
   type = 'User',
+  editable = false,
 }: ProfileHeaderProps) => {
   return (
     <section className='flex w-full flex-col justify-start'>
       <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-3'>
-          <div className='relative h-20 w-20 object-cover'>
-            <Image 
-              src={imgUrl}
-              alt={name}
-              fill
-              className='rounded-full object-cover shadow-2xl'
-            />
-          </div>
-          <div className='flex-1'>
-            <h2 className='text-left text-light-1 text-heading3-bold'>{name}</h2>
-            <p className='text-gray-1 text-base-medium'>@{username}</p>
-          </div>
-        </div>
+          <div className='flex items-center gap-3'>
+            <div className='relative h-20 w-20 object-cover'>
+              <Image 
+                src={imgUrl}
+                alt={name}
+                fill
+                className='rounded-full object-cover shadow-2xl'
+              />
+            </div>
+            <div className='flex-1'>
+              <h2 className='text-left text-light-1 text-heading3-bold'>{name}</h2>
+              <p className='text-gray-1 text-base-medium'>@{username}</p>
+            </div>
+          </div>  
+          {editable && (
+            <Link href={`/profile/${accountId}/edit`}>
+            <Image src={'/assets/edit.svg'} alt='edit' width={30} height={30} />
+          </Link>
+          )}
+        
       </div>
       {/* TODO: community */}
 

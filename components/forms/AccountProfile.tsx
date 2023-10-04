@@ -114,7 +114,7 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
         <AccountInputField form={form} name='username' />
         <AccountTextArea form={form} name='bio' />
 
-        <Button type="submit" className='bg-primary-500'>Submit</Button>
+        <Button type="submit" className='bg-primary-500'>{btnTitle}</Button>
       </form>
     </Form>
   )

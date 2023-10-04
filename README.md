@@ -30,6 +30,7 @@
   <li>Implemented Like thread</li>
   <li>Implemented Edit thread</li>
   <li>Implemented share</li>
+  <li>Implemented Edit Profile</li>
 </ul>
 
 ## Todo
