@@ -59,7 +59,6 @@ export async function fetchUserPosts(userId: string) {
   try {
     connectToDB();
 
-    // TODO: populate communities
     const threads = await User
       .findOne({ id: userId })
       .populate({
@@ -127,38 +126,5 @@ export async function fetchUsers({
     return { users, isNext };
   } catch (error: any) {
     throw new Error(`Failed to fetch users: ${error.message}`)
-  }
-}
-
-export async function getActivity(userId: string) {
-  try {
-    connectToDB();
-
-    // find all threads and comments by user
-
-    const userThreads = await Thread.find({ author: userId }).exec()
-
-    //  find all comments by user
-    // const childThreadIds = userThreads.reduce((acc, userThread) => {
-    //   return acc.concat(userThread.children)
-    // }, [])
-    
-    const childThreadIds = userThreads.map(userThread => {
-      return userThread.children
-    }).flat()
-    
-
-    const replies = await Thread.find({ 
-      _id: { $in: childThreadIds },
-      author: { $ne: userId },
-    }).populate({
-      path: 'author',
-      model: User,
-      select: '_id name image'
-    }).exec()
-
-    return replies
-  } catch (error: any) {
-    throw new Error(`Failed to fetch user activity: ${error.message}`)
   }
 }
