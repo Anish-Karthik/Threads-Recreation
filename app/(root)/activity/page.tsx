@@ -1,4 +1,4 @@
-
+// @ts-ignore
 import { getActivityLikedToUser, getActivityRepliedToUser } from '@/lib/actions/activity.actions';
 import { fetchUser } from '@/lib/actions/user.actions';
 import { currentUser } from '@clerk/nextjs'
@@ -26,7 +26,8 @@ const ActivityPage = async () => {
       <section className='mt-10 flex flex-col gap-5'>
         {replies.length > 0 && (
           <>
-            {replies.map((activity, ind) => (
+
+            {replies.map((activity: any, ind) => (
               <Link key={ind} href={`/thread/${activity.parentId}`}>
                 <article className='activity-card'>
                   <Image src={activity.author.image} alt='user' width={20} height={20} className='rounded-full object-cover'/>
@@ -44,7 +45,7 @@ const ActivityPage = async () => {
           
         ) || LikedThreads.length > 0 ? (
           <>
-            {LikedThreads.map((activity, ind) => (
+            {LikedThreads.map((activity: any, ind) => (
               <Link key={ind} href={`/thread/${activity.id}`}>
                 <article className='activity-card'>
                   <Image src={activity.author.image} alt='user' width={20} height={20} className='rounded-full object-cover'/>
