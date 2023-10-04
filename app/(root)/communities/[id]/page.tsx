@@ -18,11 +18,12 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
 
 
   const communityDetails = await fetchCommunityDetails(params.id);
+  if(!communityDetails) return null;
 
   return (
     <section>
       <ProfileHeader 
-        accountId={communityDetails.createdBy.id}
+        accountId={communityDetails.createdBy.uid}
         authUserId={user.id}
         name={communityDetails.name}
         username={communityDetails.username}
@@ -55,7 +56,7 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
           <TabsContent value={"threads"} className='w-full text-light-1'>
             <ThreadsTab
               currentUserId={user.id}
-              accountId={communityDetails._id}
+              accountId={communityDetails.id}
               accountType="Community"
             />
           </TabsContent>
@@ -63,8 +64,8 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
             <section className='mt-9 flex flex-col gap-10'>
               {communityDetails.members.map((member: any) => (
                 <UserCard
-                  key={member.id}
-                  id={member.id}
+                  key={member.uid}
+                  id={member.uid}
                   name={member.name}
                   username={member.username}
                   imgUrl={member.image}
@@ -77,8 +78,8 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
           <TabsContent value={"requests"} className='w-full text-light-1'>
             <ThreadsTab
               currentUserId={user.id}
-              accountId={communityDetails._id}
-              accountType="User"
+              accountId={communityDetails.id}
+              accountType="Community"
             />
           </TabsContent>        
         </Tabs>

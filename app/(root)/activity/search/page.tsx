@@ -1,12 +1,6 @@
 import UserCard from '@/components/cards/UserCard';
-import ProfileHeader from '@/components/shared/ProfileHeader';
-import ThreadsTab from '@/components/shared/ThreadsTab';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { profileTabs } from '@/constants';
 import { fetchUser, fetchUsers } from '@/lib/actions/user.actions';
-import User from '@/lib/models/user.model';
 import { currentUser } from '@clerk/nextjs'
-import Image from 'next/image';
 import { redirect } from 'next/navigation';
 
 const SearchPage = async () => {
@@ -36,8 +30,8 @@ const SearchPage = async () => {
           <>
             {result.users.map((person) => (
               <UserCard 
-                key={person.id} 
-                id={person.id}
+                key={person.uid} 
+                id={person.uid}
                 name={person.name}
                 username={person.username}
                 imgUrl={person.image} 

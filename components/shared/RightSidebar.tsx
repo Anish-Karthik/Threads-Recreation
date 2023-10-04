@@ -26,12 +26,12 @@ async function RightSidebar() {
         <div className='flex flex-col gap-2'>
           {communities?.communities.map((community) => (
             <CommunityCard
-              key={community._id}
-              id={community._id}
+              key={community.id}
+              id={community.id}
               name={community.name}
               username={community.username}
               imgUrl={community.image}
-              bio={community.description}
+              bio={community.bio}
               members={community.members}
             />
           ))}
@@ -42,8 +42,8 @@ async function RightSidebar() {
         <div className='mt-2 flex flex-col gap-2'>
           {users?.users.map((user) => (
             <UserCard
-              key={user.id}
-              id={user.id}
+              key={user.uid}
+              id={user.uid}
               name={user.name}
               username={user.username}
               imgUrl={user.image}

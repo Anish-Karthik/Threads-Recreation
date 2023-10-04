@@ -9,13 +9,15 @@ const ProfilePage = async ({ params }: { params: {id: string } }) => {
 
   const userInfo = await fetchUser(params.id);
 
-    const userData = {
+  if(!userInfo) return null;
+
+  const userData = {
     id: user.id,
-    objectId: userInfo?._id || "",
-    username: userInfo?.username || user.username || "",
-    name: userInfo?.name || user.firstName || "",
-    bio: userInfo?.bio || "",
-    image: userInfo?.image || user.imageUrl || "",
+    objectId: userInfo.id,
+    username: userInfo.username,
+    name: userInfo.name,
+    bio: userInfo.bio,
+    image: userInfo.image,
   };
 
   return (

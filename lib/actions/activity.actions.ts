@@ -56,6 +56,46 @@ export async function getActivityRepliedToUser(userId: string) {
   }
 }
 
+export async function getActivityLikedToUser(userId: string) { 
+  try {
+    // find threads whose parent is not null, ans select only parentThreads
+    // const likedThreadIds = await User.findById(userId, {
+    //   likedThreads: 1,
+    //   _id: 0,
+    // }).exec();
+    let likedThreadIds = (await prismadb.users.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        likedThreadIds: true,
+      },
+    }));
+
+    if(!likedThreadIds) {
+      return [];
+    }
+
+    const liked = await prismadb.threads.findMany({
+      where: {
+        id: { in: likedThreadIds.likedThreadIds },
+      },
+      include: {
+        author: true,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+
+    return liked || [];
+  } catch (error) {
+    
+  }
+}
+
+
 export async function getActivityLikedByUser(userId: string) {
   try {
     // find threads whose parent is not null, ans select only parentThreads

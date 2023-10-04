@@ -29,15 +29,15 @@ export default async function Home({
                 // const community = await fetchCommunityDetails(post.community)
                 return ( 
                 <ThreadCard 
-                  key={post._id}
-                  id={post._id}
+                  key={post.id}
+                  id={post.id}
                   currentUserId={user?.id || ''}
                   parentId={post.parentId}
                   comments={post.children}
                   content={post.text}
                   author={post.author}
-                  community={post.community}
-                  createdAt={post.createdAt}
+                  community={post.communityId}
+                  createdAt={post.createdAt.toDateString()}
                 />
               )})}
             </>

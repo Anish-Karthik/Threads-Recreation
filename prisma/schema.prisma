@@ -15,8 +15,8 @@ model users {
   uid       String  @unique
   username  String  @unique
   name      String
-  image     String?
-  bio       String?
+  image     String
+  bio       String
   onboarded Boolean @default(false)
 
   threads threads[] // author
@@ -54,12 +54,12 @@ model threads {
 }
 
 model communities {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  cid      String  @unique
-  username String  @unique
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  cid      String @unique
+  username String @unique
   name     String
-  image    String?
-  bio      String?
+  image    String
+  bio      String
 
   createdBy   users  @relation(fields: [createdById], references: [id])
   createdById String @unique @db.ObjectId

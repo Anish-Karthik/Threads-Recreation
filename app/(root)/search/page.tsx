@@ -39,8 +39,8 @@ const SearchPage = async ({
           <>
             {result.users.map((person) => (
               <UserCard 
-                key={person.id} 
-                id={person.id}
+                key={person.uid} 
+                id={person.uid}
                 name={person.name}
                 username={person.username}
                 imgUrl={person.image} 

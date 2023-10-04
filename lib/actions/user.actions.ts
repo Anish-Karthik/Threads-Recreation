@@ -82,23 +82,19 @@ export async function fetchUserPosts(userId: string) {
       where: {
         uid: userId,
       },
-      select: {
+      include: {
+        communities: true,
+        likedThreads: true,
         threads: {
-          select: {
-            id: true,
+          include: {
             children: {
-              select: {
-                id: true,
-                author: {
-                  select: {
-                    uid: true,
-                    name: true,
-                    image: true,
-                  }
-                }
-              }
-            }
-          }
+              include: {
+                author: true,
+              },
+            },
+            community: true,
+            author: true,
+          },
         }
       }
     });

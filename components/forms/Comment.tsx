@@ -15,10 +15,8 @@ import { z } from 'zod';
 import { Input } from "@/components/ui/input"
 import { useRouter, usePathname } from 'next/navigation';
 
-import { updateUser } from "@/lib/actions/user.actions";
 import { CommentValidation } from "@/lib/validations/thread";
 import Image from "next/image";
-import { currentUser } from "@clerk/nextjs";
 import { addCommentToThread } from "@/lib/actions/thread.actions";
 
 interface CommentProps {

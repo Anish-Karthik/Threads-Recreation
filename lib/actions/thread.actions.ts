@@ -200,8 +200,15 @@ export async function fetchThreadById(id: string) {
         children: {
           include: {
             author: true,
+            community: true,
+            children: {
+              include: {
+                author: true,
+              }
+            }
           }
         },
+        community: true,
         likedBy: true,
       }
     });

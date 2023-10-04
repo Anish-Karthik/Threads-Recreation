@@ -139,7 +139,11 @@ export async function fetchCommunityPosts(id: string) {
         threads: {
           include: {
             author: true,
-            children: true,
+            children: {
+              include: {
+                author: true,
+              }
+            }
           }
         }
       }

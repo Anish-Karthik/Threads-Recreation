@@ -17,8 +17,9 @@ const EditThreadpage = async ({ params }: { params: { id : string }}) => {
   if(!userInfo?.onboarded) redirect('/onboarding');
 
   const thread = await fetchThreadById(id);
+  if(!thread) return null;
   return (
-    <EditThread threadId={id} userId={userInfo._id} text={thread.text} />
+    <EditThread threadId={id} userId={userInfo.id} text={thread.text} />
   )
 }
 

@@ -62,11 +62,11 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
     e.preventDefault();
     const fileReader = new FileReader();
 
-    if(e.target?.files && e.target.files.length > 0) {
+    if (e.target?.files && e.target.files.length > 0) {
       const file = e.target?.files[0];
       setFiles(Array.from(e.target.files));
 
-      if(!file.type.includes('image')) return;
+      if (!file.type.includes('image')) return;
 
       fileReader.onload = async (event) => {
         const imageDataUrl = event.target?.result?.toString() || '';
@@ -79,17 +79,17 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
 
   async function onSubmit(values: z.infer<typeof UserValidation>) {
     const blob = values.profile_photo;
-    
+
     const hasImageChanged = isBase64Image(blob);
 
-    if(hasImageChanged) {
+    if (hasImageChanged) {
       const imgRes = await startUpload(files);
-
+      // TODO: deprecated
       if (imgRes && imgRes[0].fileUrl) {
         values.profile_photo = imgRes[0].fileUrl;
       }
     }
-    
+
     await updateUser({
       userId: user.id,
       username: values.username,
@@ -99,7 +99,7 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
       path: pathname,
     });
 
-    if(pathname === '/profile/edit') {
+    if (pathname === '/profile/edit') {
       router.back();
     } else {
       router.push('/');
@@ -122,47 +122,47 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
 
 export default AccountProfile
 
-function AccountProfilePhoto({ form, handleImageChange, name } : AccountFormFieldProps & { handleImageChange: (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => void }) {
+function AccountProfilePhoto({ form, handleImageChange, name }: AccountFormFieldProps & { handleImageChange: (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => void }) {
   return (
     <FormField
-          control={form.control}
-          name="profile_photo"
-          render={({ field }) => (
-            <FormItem className='flex items-center gap-4'>
-              <FormLabel className='account-form_image-label'>
-                {field.value ?(
-                  <Image
-                    src={field.value}
-                    alt="Profile Photo"
-                    width={96} height={96}
-                    priority={true}
-                    className='rounded-full object-contain'
-                  />)
-                :(
-                  <Image
-                    src={"assets/profile.svg"}
-                    alt="Profile Photo"
-                    width={30} height={30}
-                    className='rounded-full object-contain'
-                  />)}
-              </FormLabel>
-              <FormControl className='flex-1 text-base-semibold text-gray-200'>
-                <Input
-                  type="file"
-                  accept='image/*'
-                  placeholder='Upload a profile photo'
-                  className='account-form_image-input'
-                  onChange={(e) => handleImageChange(e, field.onChange)}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      control={form.control}
+      name="profile_photo"
+      render={({ field }) => (
+        <FormItem className='flex items-center gap-4'>
+          <FormLabel className='account-form_image-label'>
+            {field.value ? (
+              <Image
+                src={field.value}
+                alt="Profile Photo"
+                width={96} height={96}
+                priority={true}
+                className='rounded-full object-contain'
+              />)
+              : (
+                <Image
+                  src={"assets/profile.svg"}
+                  alt="Profile Photo"
+                  width={30} height={30}
+                  className='rounded-full object-contain'
+                />)}
+          </FormLabel>
+          <FormControl className='flex-1 text-base-semibold text-gray-200'>
+            <Input
+              type="file"
+              accept='image/*'
+              placeholder='Upload a profile photo'
+              className='account-form_image-input'
+              onChange={(e) => handleImageChange(e, field.onChange)}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   )
 }
 
-function AccountInputField({ form, name } : AccountFormFieldProps) {
+function AccountInputField({ form, name }: AccountFormFieldProps) {
   return (
     <FormField
       control={form.control}
@@ -186,7 +186,7 @@ function AccountInputField({ form, name } : AccountFormFieldProps) {
   )
 }
 
-function AccountTextArea({ form, name } : AccountFormFieldProps) {
+function AccountTextArea({ form, name }: AccountFormFieldProps) {
   return (
     <FormField
       control={form.control}

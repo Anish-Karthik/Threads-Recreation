@@ -21,13 +21,13 @@ const ProfilePage = async ({ params }: { params: {id: string } }) => {
   return (
     <section>
       <ProfileHeader 
-        accountId={userInfo.id}
+        accountId={userInfo.uid}
         authUserId={user.id}
         name={userInfo.name}
         username={userInfo.username}
         imgUrl={userInfo.image}
         bio={userInfo.bio}
-        editable={user.id === userInfo.id}
+        editable={user.id === userInfo.uid}
       />
 
       <div className='mt-9'>
@@ -54,7 +54,7 @@ const ProfilePage = async ({ params }: { params: {id: string } }) => {
             <TabsContent key={tab.label} value={tab.value} className='w-full text-light-1'>
               <ThreadsTab
                 currentUserId={user.id}
-                accountId={userInfo.id}
+                accountId={userInfo.uid}
                 accountType="User"
               />
             </TabsContent>

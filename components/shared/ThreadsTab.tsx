@@ -15,35 +15,52 @@ const ThreadsTab = async ({
   accountId,
   accountType,
 }: ThreadsTabProps) => {
-  let result = accountType === "User"? await fetchUserPosts(accountId): await fetchCommunityPosts(accountId);
-  console.log(`result ${accountType}`, result);
-  // if(!result) return redirect('/')
-  console.log(result)
+  if(accountType === 'User') {  
+    const result = await fetchUserPosts(accountId);
+    if(!result) return null;
 
+    return (
+      <section className='mt-9 flex flex-col gap-10'>
+        {result && result.threads.map((thread) => (
+          <ThreadCard
+            key={thread.id}
+            id={thread.id}
+            currentUserId={currentUserId}
+            parentId={thread.parentId}
+            comments={thread.children}
+            content={thread.text}
+            author={result} //todo
+            community={thread.communityId} //todo
+            createdAt={thread.createdAt.toDateString()}
+            isComment={true}
+          />
+        ))
+
+        }
+      </section>
+    )
+  } 
+  const result = await fetchCommunityPosts(accountId);
   return (
     <section className='mt-9 flex flex-col gap-10'>
-      {result && result.threads.map((thread: any) => (
+      {result && result.threads.map((thread) => (
         <ThreadCard
-          key={thread._id}
-          id={thread._id}
+          key={thread.id}
+          id={thread.id}
           currentUserId={currentUserId}
           parentId={thread.parentId}
           comments={thread.children}
           content={thread.text}
-          author={
-            accountType === 'User'
-              ? { name: result.name, image: result.image, id: result.id}
-              : { name: thread.author.name, image: thread.author.image, id:thread.author.id}
-          } //todo
-          community={thread.community} //todo
-          createdAt={thread.createdAt}
+          author={thread.author}
+          community={thread.communityId} //todo
+          createdAt={thread.createdAt.toDateString()}
           isComment={true}
         />
       ))
 
       }
     </section>
-  )
+  );
 }
 
 export default ThreadsTab
