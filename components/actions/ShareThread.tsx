@@ -1,4 +1,4 @@
-/* eslint-disable ReferenceError */
+
 "use client"
 import React from 'react'
 import toast from 'react-hot-toast'
@@ -150,7 +150,7 @@ function ShareThreadViaThirdParty({url}: {url: string}) {
 
                 <Link href={`https://web.whatsapp.com/send?text=${baseUrl+url}`}>
                   <div className='flex flex-col justify-center items-center gap-1 '>
-                    <img src={'/whatsapp.svg'} alt='whatsapp' />
+                    <Image src={'/whatsapp.svg'} alt='whatsapp' />
                     <p className='text-tiny-medium'>Whatsapp</p>
                   </div>
                 </Link>
