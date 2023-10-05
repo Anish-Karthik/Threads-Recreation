@@ -1,24 +1,39 @@
 "use server";
 
-import { type } from "os";
 import prismadb from "./prismadb";
 import { fetchUser } from "./user.actions";
 
 type SortOrder = "asc" | "desc";
 
-export async function createCommunity(
-  id: string,
+export async function isAlreadyCommunity(cid: string) {
+  try {
+    const community = await prismadb.communities.findUnique({
+      where: {
+        cid: cid,
+      },
+    });
+    return !!community;
+  } catch (error) {
+    // Handle any errors
+    console.error("Error checking if community exists:", error);
+    throw error;
+  }
+}
+
+export async function createCommunity({
+  name,
+  cid,
+  image,
+  bio,
+  createdById 
+}:{
   name: string,
-  username: string,
+  cid: string,
   image: string,
   bio: string,
-  createdById: string // Change the parameter name to reflect it's an id
-) {
+  createdById: string 
+}) {
   try {
-    console.log(
-      "**********************************************************************************************************"
-    );
-    console.log("createCommunity", id, name, username, image, bio, createdById);
 
     // Find the user with the provided unique id
     const user = await fetchUser(createdById);
@@ -26,21 +41,14 @@ export async function createCommunity(
     if (!user) {
       throw new Error("User not found"); // Handle the case if the user with the id is not found
     }
-
-    // const newCommunity = new Community({
-    //   id,
-    //   name,
-    //   username,
-    //   image,
-    //   bio,
-    //   createdBy: user._id, // Use the mongoose ID of the user
-    // });
+    if (await isAlreadyCommunity(cid)) {
+      throw new Error("Community with this cid already exists"); // Handle the case if the user with the id is not found
+    }
 
     const newCommunity = await prismadb.communities.create({
       data: {
-        cid: id,
         name,
-        username,
+        cid,
         image,
         bio,
         createdById: user.id,
@@ -48,8 +56,6 @@ export async function createCommunity(
     });
 
     // Update User model
-
-    // Save the user
     await prismadb.users.update({
       where: {
         id: user.id,
@@ -57,7 +63,7 @@ export async function createCommunity(
       data: {
         communities: {
           connect: {
-            cid: id,
+            cid: newCommunity.cid,
           },
         },
       },
@@ -75,19 +81,9 @@ export async function fetchCommunityDetails(id: string | null) {
   try {
     if (!id) return null;
 
-    // const communityDetails = await Community.findOne(searchId).populate([
-    //     "createdBy",
-    //     {
-    //       path: "members",
-    //       model: User,
-    //       select: "name username image _id id",
-    //     },
-    //   ]);
-
     const communityDetails = await prismadb.communities.findUnique({
       where: {
         cid: id,
-        OR: [{ id: id }],
       },
       include: {
         createdBy: true,
@@ -106,26 +102,6 @@ export async function fetchCommunityDetails(id: string | null) {
 
 export async function fetchCommunityPosts(id: string) {
   try {
-    // const communityPosts = await Community.findById(id).populate({
-    //   path: "threads",
-    //   model: Thread,
-    //   populate: [
-    //     {
-    //       path: "author",
-    //       model: User,
-    //       select: "name image id", // Select the "name" and "_id" fields from the "User" model
-    //     },
-    //     {
-    //       path: "children",
-    //       model: Thread,
-    //       populate: {
-    //         path: "author",
-    //         model: User,
-    //         select: "image _id", // Select the "name" and "_id" fields from the "User" model
-    //       },
-    //     },
-    //   ],
-    // });
 
     const communityPosts = await prismadb.communities.findUnique({
       where: {
@@ -173,63 +149,41 @@ export async function fetchCommunities({
     const regex = new RegExp(searchString, "i");
 
     // Create an initial query object to filter communities.
-    // const query: FilterQuery<typeof Community> = {};
-
-    // If the search string is not empty, add the $or operator to match either username or name fields.
-    // if (searchString.trim() !== "") {
-    //   query.$or = [
-    //     { username: { $regex: regex } },
-    //     { name: { $regex: regex } },
-    //   ];
-    // }
 
     type QueryType =
-      | {
+      {
           OR: [
             {
               name: {
                 contains: string;
                 mode: "insensitive";
               };
-              username: {
+              cid: {
                 contains: string;
                 mode: "insensitive";
               };
             }
           ];
         }
-      | {};
     // what condition to use if searchString is empty ,then return all communities?
 
-    const query: QueryType =
-      searchString.trim() !== ""
-        ? {
-            OR: [
-              {
-                name: {
-                  contains: searchString,
-                  mode: "insensitive",
-                },
-              },
-              {
-                username: {
-                  contains: searchString,
-                  mode: "insensitive",
-                },
-              },
-            ],
-          }
-        : { OR: [] };
+    const query: QueryType = {
+      OR: [
+        {
+          name: {
+            contains: searchString,
+            mode: "insensitive",
+          },
+          cid: {
+            contains: searchString,
+            mode: "insensitive",
+          },
+        },
+      ],
+    }
 
     // Define the sort options for the fetched communities based on createdAt field and provided sort order.
     const sortOptions = { createdAt: sortBy };
-
-    // Create a query to fetch the communities based on the search and sort criteria.
-    // const communitiesQuery = Community.find(query)
-    //   .sort(sortOptions)
-    //   .skip(skipAmount)
-    //   .limit(pageSize)
-    //   .populate("members");
 
     const communities = await prismadb.communities.findMany({
       where: {
@@ -271,7 +225,6 @@ export async function addMemberToCommunity(
     const community = await prismadb.communities.findUnique({
       where: {
         cid: communityId,
-        OR: [{ id: communityId }],
       },
       include: {
         members: true,
@@ -298,7 +251,6 @@ export async function addMemberToCommunity(
     await prismadb.communities.update({
       where: {
         cid: communityId,
-        OR: [{ id: communityId }],
       },
       data: {
         members: {
@@ -346,15 +298,9 @@ export async function removeUserFromCommunity(
       throw new Error("Community not found");
     }
 
-    // Remove the user's _id from the members array in the community
-    // await Community.updateOne(
-    //   { _id: communityIdObject._id },
-    //   { $pull: { members: userIdObject._id } }
-    // );
     await prismadb.communities.update({
       where: {
         cid: communityId,
-        OR: [{ id: communityId }],
       },
       data: {
         members: {
@@ -365,11 +311,6 @@ export async function removeUserFromCommunity(
       },
     });
 
-    // Remove the community's _id from the communities array in the user
-    // await User.updateOne(
-    //   { _id: userIdObject._id },
-    //   { $pull: { communities: communityIdObject._id } }
-    // );
     await prismadb.users.update({
       where: {
         id: userId,
@@ -394,23 +335,15 @@ export async function removeUserFromCommunity(
 export async function updateCommunityInfo(
   communityId: string,
   name: string,
-  username: string,
   image: string
 ) {
   try {
-    // Find the community by its _id and update the information
-    // const updatedCommunity = await Community.findOneAndUpdate(
-    //   { id: communityId },
-    //   { name, username, image }
-    // );
     const updatedCommunity = await prismadb.communities.update({
       where: {
         cid: communityId,
-        OR: [{ id: communityId }],
       },
       data: {
         name,
-        username,
         image,
       },
     });
@@ -430,13 +363,9 @@ export async function updateCommunityInfo(
 export async function deleteCommunity(communityId: string) {
   try {
     // Find the community by its ID and delete it
-    // const deletedCommunity = await Community.findOneAndDelete({
-    //   id: communityId,
-    // });
     const deletedCommunity = await prismadb.communities.delete({
       where: {
         cid: communityId,
-        OR: [{ id: communityId }],
       },
     });
 
@@ -462,12 +391,6 @@ export async function deleteCommunity(communityId: string) {
         },
       },
     });
-
-    // Remove the community from the 'communities' array for each user
-    // const updateUserPromises = communityUsers.map((user) => {
-    //   user.communities.pull(communityId);
-    //   return user.save();
-    // });
     const updateUserPromises = communityUsers.map((user) => {
       return prismadb.users.update({
         where: {

@@ -3,10 +3,10 @@ import { cn, formatDateString } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react'
-import DeleteThread from '../actions/DeleteThread';
+import DeleteThread from '../thread-actions/DeleteThread';
 import { fetchLikeCount, isLikedThread } from '@/lib/actions/thread.actions';
-import LikeThread from '../actions/LikeThread';;
-import ShareThread from '../actions/ShareThread';
+import LikeThread from '../thread-actions/LikeThread';;
+import ShareThread from '../thread-actions/ShareThread';
 
 interface ThreadCardProps {
   key: string;

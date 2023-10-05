@@ -31,6 +31,12 @@
   <li>Implemented Edit thread</li>
   <li>Implemented share</li>
   <li>Implemented Edit Profile</li>
+  <li>Use prisma ORM</li>
+  <h4><b>Community Additional Features without Clerk</b></h4>
+  <ul> 
+    <li>Created Community Card and Community Page and action</li>
+  </ul>
+  <br>
 </ul>
 
 ## Todo
@@ -38,6 +44,6 @@
   <li>Implement repost</li>
   <li>Activity Notification for like</li>
   <li>Make community without clerk</li>
-  <li>Use prisma ORM</li>
+  
   <li>Use TRPC/GraphQL instead of REST</li>
 </ul>

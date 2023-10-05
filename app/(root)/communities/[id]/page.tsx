@@ -26,7 +26,7 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
         accountId={communityDetails.createdBy.uid}
         authUserId={user.id}
         name={communityDetails.name}
-        username={communityDetails.username}
+        username={communityDetails.cid}
         imgUrl={communityDetails.image}
         bio={communityDetails.bio}
         type='Community'

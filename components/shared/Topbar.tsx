@@ -22,6 +22,10 @@ function Topbar() {
           </SignedIn>
         </div>
 
+        <Link href={"/profile"}>
+          <Image src={"/assets/user.svg"} alt={"Profile"} width={24} height={24} />
+        </Link>
+        {/* 
         <OrganizationSwitcher 
           appearance={{
             baseTheme: dark,
@@ -29,7 +33,7 @@ function Topbar() {
               organizationSwitcherTrigger: "py-2 px-4"
             }
           }}
-        />
+        /> */}
 
       </div>
     </nav>

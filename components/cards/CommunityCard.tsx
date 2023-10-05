@@ -2,23 +2,25 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
 
 interface Props {
   id: string;
   name: string;
-  username: string;
+  cid: string;
   imgUrl: string;
   bio: string;
+  width?: boolean;
   members: {
     image: string;
   }[];
 }
 
-function CommunityCard({ id, name, username, imgUrl, bio, members }: Props) {
+function CommunityCard({ id, name, cid, imgUrl, bio, members, width }: Props) {
   return (
-    <article className='community-card w-[17rem]'>
+    <article className={cn('community-card', width ? "!w-[18rem]" : '' )}>
       <div className='flex flex-wrap items-center gap-2'>
-        <Link href={`/communities/${id}`} className='relative h-12 w-12'>
+        <Link href={`/communities/${cid}`} className='relative h-12 w-12'>
           <Image
             src={imgUrl}
             alt='community_logo'
@@ -28,17 +30,17 @@ function CommunityCard({ id, name, username, imgUrl, bio, members }: Props) {
         </Link>
 
         <div>
-          <Link href={`/communities/${id}`}>
+          <Link href={`/communities/${cid}`}>
             <h4 className='text-base-semibold text-light-1'>{name}</h4>
           </Link>
-          <p className='text-small-medium text-gray-1'>@{username}</p>
+          <p className='text-small-medium text-gray-1'>@{cid}</p>
         </div>
       </div>
 
       <p className='mt-4 text-subtle-medium text-gray-1'>{bio}</p>
 
       <div className='mt-5 flex flex-wrap items-center justify-between gap-3'>
-        <Link href={`/communities/${id}`}>
+        <Link href={`/communities/${cid}`}>
           <Button size='sm' className='community-card_btn'>
             View
           </Button>

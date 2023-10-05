@@ -54,12 +54,11 @@ model threads {
 }
 
 model communities {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  cid      String @unique
-  username String @unique
-  name     String
-  image    String
-  bio      String
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  cid   String @unique
+  name  String
+  image String
+  bio   String
 
   createdBy   users  @relation(fields: [createdById], references: [id])
   createdById String @db.ObjectId

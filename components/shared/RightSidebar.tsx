@@ -29,10 +29,11 @@ async function RightSidebar() {
               key={community.id}
               id={community.id}
               name={community.name}
-              username={community.username}
+              cid={community.cid}
               imgUrl={community.image}
               bio={community.bio}
               members={community.members}
+              width={true}
             />
           ))}
         </div>
