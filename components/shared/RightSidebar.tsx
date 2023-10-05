@@ -7,14 +7,14 @@ import UserCard from '../cards/UserCard';
 
 async function RightSidebar() {
   const user = await currentUser();
-  if(!user) return null;
+  // if(!user) return null;
   const communities = await fetchCommunities({
     pageNumber: 1,
     pageSize: 2,
     sortBy: "desc",
   });
   const users = await fetchUsers({
-    userId: user.id,
+    userId: user?.id || '',
     pageNumber: 1,
     pageSize: 3,
     sortBy: "desc",
