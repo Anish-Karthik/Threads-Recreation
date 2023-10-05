@@ -33,7 +33,6 @@
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.13",
     "lucide-react": "^0.268.0",
-    "mongoose": "^7.4.2",
     "next": "^13.5.4",
     "node-fetch": "^2.7.0",
     "postcss": "^8.4.31",

@@ -1,6 +1,10 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link';
+import DeleteThread from '../forms/DeleteEntity';
+import DeleteEntity from '../forms/DeleteEntity';
+import { deleteUser } from '@/lib/actions/user.actions';
+import { deleteCommunity } from '@/lib/actions/community.actions';
 
 interface ProfileHeaderProps {
   accountId: string;
@@ -41,9 +45,12 @@ const ProfileHeader = ({
             </div>
           </div>  
           {editable && (
-            <Link href={`/profile/${accountId}/edit`}>
-            <Image src={'/assets/edit.svg'} alt='edit' width={30} height={30} />
-          </Link>
+            <div >
+              <DeleteEntity id={accountId} type={type} deleteCallback={type==="User"? deleteUser: deleteCommunity}/>
+              <Link href={ type === 'User'? `/profile/${accountId}/edit`: `/communities/${accountId}/edit`}>
+                <Image src={'/assets/edit.svg'} alt='edit' width={30} height={30} />
+              </Link>
+            </div>
           )}
         
       </div>

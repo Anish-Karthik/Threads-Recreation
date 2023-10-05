@@ -2,10 +2,10 @@
 
 import { toggleLikeThread } from '@/lib/actions/thread.actions';
 import { useAuth } from '@clerk/nextjs';
-import { set } from 'mongoose';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
+import toast from 'react-hot-toast';
 
 interface LikeThreadProps {
   isLiked: boolean;
@@ -17,22 +17,31 @@ interface LikeThreadProps {
 
 const LikeThread = ({isLiked, threadId, userId, likeCount = 0 , path}: LikeThreadProps) => {
 
-  const [likes, setLikes] = useState<any>({
-    isLiked: isLiked,
-    likes: likeCount,
-  }); // [likeObj, setLikeObj] = useState({})
+  const [liked, setLiked] = useState(isLiked);
+  // const [likes, setLikes] = useState(likeCount);
   const user = useAuth();
   const router = useRouter();
   const toggleHeart = async () => {
     if(!user || !user.userId) return router.push('/sign-in');
-    const result = await toggleLikeThread(threadId, userId, path);
-    if(result == undefined) return console.log('error');
-    setLikes(result);
+    try {
+      setLiked((prev) => !prev);
+      const result = await toggleLikeThread(threadId, userId, path);
+      if(!result) {
+        toast.error('Something went wrong');
+        return;
+      }
+      setLiked(result.isLiked);
+      // setLikes(result.likes);
+    } catch (error) {
+      toast.error('Something went wrong');
+    }
   }
+
+
   return (
     <div className='flex items-center justify-start gap-1 text-light-4'>
-      <Image src={likes.liked?'/assets/heart-filled.svg': '/assets/heart-gray.svg'} alt='heart' width={24} height={24} className='cursor-pointer object-contain' onClick={toggleHeart}/>
-      {likes>0 && likes}
+      <Image src={liked?'/assets/heart-filled.svg': '/assets/heart-gray.svg'} alt='heart' width={24} height={24} className='cursor-pointer object-contain' onClick={toggleHeart}/>
+      {likeCount + (liked?1:0) - 1 > 0 && likeCount + (liked?1:0) - 1 }
     </div>
   )
 }

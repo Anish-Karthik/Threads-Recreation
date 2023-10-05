@@ -16,7 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter, usePathname } from 'next/navigation';
-import { createCommunity } from '@/lib/actions/community.actions';
+import { createCommunity, updateCommunityInfo } from '@/lib/actions/community.actions';
 import { Input } from '../ui/input';
 
 import React, { useState, useEffect } from 'react'
@@ -26,8 +26,9 @@ import { useUploadThing } from '@/lib/hooks/uploadthing';
 import { CommunityValidation } from "@/lib/validations/community";
 import toast from "react-hot-toast";
 import { CustomInputField, CustomProfilePhoto, CustomTextArea } from "../form-fields";
+import { communities } from "@prisma/client";
 
-const CreateCommunity = ({ userId }: { userId: string }) => {
+const CreateCommunity = ({ userId, communityDetails }: { userId: string, communityDetails?: communities }) => {
   
 
   const [files, setFiles] = useState<File[]>([]);
@@ -39,7 +40,10 @@ const CreateCommunity = ({ userId }: { userId: string }) => {
   const form = useForm({
     resolver: zodResolver(CommunityValidation),
     defaultValues: {
-      image: '/assets/org.png',
+      name: communityDetails?.name || '',
+      cid: communityDetails?.cid || '',
+      bio: communityDetails?.bio || '',
+      image: communityDetails?.image || '/assets/org.png',
     }
   });
   if(!userId) return null;
@@ -77,14 +81,26 @@ const CreateCommunity = ({ userId }: { userId: string }) => {
       }
     }
     try {
-      const newCommunity = await createCommunity({ 
-        name: values.name,
-        cid: values.cid,
-        image: values.image,
-        bio: values.bio,
-        createdById: userId,
-      });
-      router.push(`/communities/${newCommunity.cid}`);
+      if(communityDetails) {
+        const updatedCommunity = await updateCommunityInfo({
+          cid: communityDetails.cid,
+          name: values.name,
+          image: values.image,
+          bio: values.bio,
+        });
+        router.push(`/communities/${updatedCommunity.cid}`);
+        toast.success('Community Updated Successfully');
+      } else{
+        const newCommunity = await createCommunity({ 
+          name: values.name,
+          cid: values.cid,
+          image: values.image,
+          bio: values.bio,
+          createdById: userId,
+        });
+        router.push(`/communities/${newCommunity.cid}`);
+        toast.success('Community Created Successfully');
+      }
     } catch (error) {
       toast.error(error.message);
       console.log(error);
@@ -100,7 +116,7 @@ const CreateCommunity = ({ userId }: { userId: string }) => {
         <CustomInputField form={form} name='cid' alt="Unique cid" />
         <CustomTextArea form={form} name='bio' />
 
-        <Button type="submit" className='bg-primary-500' disabled={isSubmitting}>Create Community</Button>
+        <Button type="submit" className='bg-primary-500' disabled={isSubmitting}>{communityDetails? "Edit":"Create"} Community</Button>
       </form>
     </Form>
   )

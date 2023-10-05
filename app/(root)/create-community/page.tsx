@@ -4,7 +4,7 @@ import { fetchUser } from "@/lib/actions/user.actions";
 import { currentUser } from "@clerk/nextjs"
 import { redirect } from "next/navigation"
 
-async function CreateThreadPage() {
+async function CreateCommmunityPage() {
   const user = await currentUser()
 
   if (!user) return null;
@@ -22,4 +22,4 @@ async function CreateThreadPage() {
   )
 }
 
-export default CreateThreadPage
+export default CreateCommmunityPage

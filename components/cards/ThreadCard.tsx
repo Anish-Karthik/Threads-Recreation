@@ -3,7 +3,7 @@ import { cn, formatDateString } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react'
-import DeleteThread from '../thread-actions/DeleteThread';
+import DeleteThread from '../forms/DeleteEntity';
 import { fetchLikeCount, isLikedThread } from '@/lib/actions/thread.actions';
 import LikeThread from '../thread-actions/LikeThread';;
 import ShareThread from '../thread-actions/ShareThread';

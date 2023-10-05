@@ -1,7 +1,9 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import prismadb from "./prismadb";
 import { fetchUser } from "./user.actions";
+import { deleteThread } from "./thread.actions";
 
 type SortOrder = "asc" | "desc";
 
@@ -12,7 +14,7 @@ export async function isAlreadyCommunity(cid: string) {
         cid: cid,
       },
     });
-    return !!community;
+    return !!community && cid !== community?.cid;
   } catch (error) {
     // Handle any errors
     console.error("Error checking if community exists:", error);
@@ -25,16 +27,15 @@ export async function createCommunity({
   cid,
   image,
   bio,
-  createdById 
-}:{
-  name: string,
-  cid: string,
-  image: string,
-  bio: string,
-  createdById: string 
+  createdById,
+}: {
+  name: string;
+  cid: string;
+  image: string;
+  bio: string;
+  createdById: string;
 }) {
   try {
-
     // Find the user with the provided unique id
     const user = await fetchUser(createdById);
 
@@ -59,8 +60,6 @@ export async function createCommunity({
         },
       },
     });
-
-    
 
     // Update User model
     await prismadb.users.update({
@@ -131,7 +130,6 @@ export async function fetchCommunityDetailsById(id: string | null) {
 
 export async function fetchCommunityPosts(id: string) {
   try {
-
     const communityPosts = await prismadb.communities.findUnique({
       where: {
         cid: id,
@@ -178,21 +176,20 @@ export async function fetchCommunities({
 
     // Create an initial query object to filter communities.
 
-    type QueryType =
-      {
-          OR: [
-            {
-              name: {
-                contains: string;
-                mode: "insensitive";
-              };
-              cid: {
-                contains: string;
-                mode: "insensitive";
-              };
-            }
-          ];
+    type QueryType = {
+      OR: [
+        {
+          name: {
+            contains: string;
+            mode: "insensitive";
+          };
+          cid: {
+            contains: string;
+            mode: "insensitive";
+          };
         }
+      ];
+    };
     // what condition to use if searchString is empty ,then return all communities?
 
     const query: QueryType = {
@@ -208,7 +205,7 @@ export async function fetchCommunities({
           },
         },
       ],
-    }
+    };
 
     // Define the sort options for the fetched communities based on createdAt field and provided sort order.
     const sortOptions = { createdAt: sortBy };
@@ -360,19 +357,26 @@ export async function removeUserFromCommunity(
   }
 }
 
-export async function updateCommunityInfo(
-  communityId: string,
-  name: string,
-  image: string
-) {
+export async function updateCommunityInfo({
+  name,
+  cid,
+  image,
+  bio,
+}: {
+  name: string;
+  cid: string;
+  image: string;
+  bio: string;
+}) {
   try {
     const updatedCommunity = await prismadb.communities.update({
       where: {
-        cid: communityId,
+        cid: cid,
       },
       data: {
         name,
         image,
+        bio,
       },
     });
 
@@ -388,54 +392,36 @@ export async function updateCommunityInfo(
   }
 }
 
-export async function deleteCommunity(communityId: string) {
+export async function deleteCommunity(communityId: string, path: string) {
   try {
     // Find the community by its ID and delete it
+    console.log("communityId", communityId);
+    const community = await fetchCommunityDetails(communityId);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+
+    // Delete all threads associated with the community
+    // TODO: Optimize this to delete by pagination instead of all at once (if there are a lot of threads)
+    const threads = await prismadb.threads.findMany({
+      where: {
+        communityId: community.id,
+      },
+    });
+
+    threads.forEach(async (thread) => {
+      await deleteThread(thread.id, path);
+    });
+
+    // Delete the community
     const deletedCommunity = await prismadb.communities.delete({
       where: {
         cid: communityId,
       },
     });
 
-    if (!deletedCommunity) {
-      throw new Error("Community not found");
-    }
-
-    // Delete all threads associated with the community
-
-    await prismadb.threads.deleteMany({
-      where: {
-        communityId: communityId,
-      },
-    });
-
-    // Find all users who are part of the community
-    const communityUsers = await prismadb.users.findMany({
-      where: {
-        communities: {
-          some: {
-            cid: communityId,
-          },
-        },
-      },
-    });
-    const updateUserPromises = communityUsers.map((user) => {
-      return prismadb.users.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          communities: {
-            disconnect: {
-              cid: communityId,
-            },
-          },
-        },
-      });
-    });
-
-    await Promise.all(updateUserPromises);
-
+    revalidatePath('/');
     return deletedCommunity;
   } catch (error) {
     console.error("Error deleting community: ", error);

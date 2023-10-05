@@ -18,18 +18,19 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
 
 
   const communityDetails = await fetchCommunityDetails(params.id);
-  if(!communityDetails) return null;
+  if(!communityDetails) return redirect('/');
 
   return (
     <section>
       <ProfileHeader 
-        accountId={communityDetails.createdBy.uid}
+        accountId={communityDetails.cid}
         authUserId={user.id}
         name={communityDetails.name}
         username={communityDetails.cid}
         imgUrl={communityDetails.image}
         bio={communityDetails.bio}
         type='Community'
+        editable={communityDetails.createdBy.uid === user.id}
       />
 
       <div className='mt-9'>

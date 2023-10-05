@@ -17,14 +17,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 
-export default function DeleteThread({ id, author, currentUserId }: { id: string, author: string, currentUserId: string }) {
+export default function DeleteEntity({ id, type, deleteCallback }: { id: string,  type: "Thread" | "Community" | "User", deleteCallback: any }) {
   const pathname = usePathname();
   const router = useRouter();
   const deletePost = async () => {
     try {
-      const result = await deleteThread(id, pathname);
-      toast.success('Thread Deleted Successfully');
-      router.back();
+      const result = await deleteCallback(id, pathname);
+      toast.success(`${type} Deleted Successfully`);
+      router.push('/');
     } catch (error) {
       toast.error(error.message);
     }
@@ -32,18 +32,19 @@ export default function DeleteThread({ id, author, currentUserId }: { id: string
   return (
     <Dialog>
       <DialogTrigger asChild>
-        {author === currentUserId &&
-          <div className='flex items-center gap-1.5'>
-            <Image src="/assets/delete.svg" alt='delete' width={24} height={24} className='cursor-pointer object-contain' />
-            <p className='text-subtle-medium text-gray-1 cursor-pointer'>Delete</p>
-          </div>
-        }
+        <div className='flex items-center gap-1.5'>
+          <Image src="/assets/delete.svg" alt='delete' width={24} height={24} className='cursor-pointer object-contain' />
+          <p className='text-subtle-medium text-gray-1 cursor-pointer'>Delete</p>
+        </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-dark-2 text-light-2"  >
         <DialogHeader>
-          <DialogTitle className='text-light-2'>Delete Thread</DialogTitle>
+          <DialogTitle className='text-light-2'>Delete {type}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete this thread? 
+            Are you sure you want to delete this {type}? 
+            {type === "Thread" && " All comments will be deleted as well."}
+            {type === "Community" && " All threads and comments will be deleted as well."}
+            {type === "User" && " Your existence in this app will be erased without a trace."}
             This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
