@@ -46,6 +46,11 @@
 
 ## Todo
 <ul>
+  <li>Implement add/remove member</li>
+  <li>Implement add/remove moderator</li>
+  <li>Implement auto assign any moderator as creator if creator leaves or account is deleted</li>
   <li>Implement repost</li>
-  <li>Use TRPC/GraphQL instead of REST</li>
+  <li>Implement bookmark</li>
+  <li>Implement follow</li>
+  <li>Implement DM</li>
 </ul>
