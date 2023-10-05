@@ -148,10 +148,7 @@ export async function fetchUsers({
 
     // in Prisma
     type QueryType = {
-      NOT: {
-        uid: string;
-      };
-      OR?: [
+      OR: [
         {
           name: {
             contains: string;
@@ -165,15 +162,13 @@ export async function fetchUsers({
           };
         }
       ];
+      NOT: {
+        uid: string;
+      };
     };
 
     const query: QueryType = {
-      NOT: {
-        uid: userId,
-      },
-    };
-    if (searchString.trim() !== "") {
-      query.OR = [
+      OR: [
         {
           name: {
             contains: searchString,
@@ -186,15 +181,11 @@ export async function fetchUsers({
             mode: "insensitive",
           },
         },
-      ];
-    }
-
-    // const sortOptions = { createdAt: sortBy }
-
-    // const usersQuery = await User.find(query)
-    // .sort(sortOptions)
-    // .skip(skipAmount)
-    // .limit(pageSize).exec();
+      ],
+      NOT: {
+        uid: userId,
+      },
+    };
 
     const users = await prismadb.users.findMany({
       where: query,
