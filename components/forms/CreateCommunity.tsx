@@ -31,6 +31,7 @@ const CreateCommunity = ({ userId }: { userId: string }) => {
   
 
   const [files, setFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { startUpload } = useUploadThing("media");
   const router = useRouter();
   const pathname = usePathname();
@@ -63,6 +64,7 @@ const CreateCommunity = ({ userId }: { userId: string }) => {
   }
 
   async function onSubmit(values: z.infer<typeof CommunityValidation>) {
+    setIsSubmitting(true);
     const blob = values.image;
 
     const hasImageChanged = isBase64Image(blob);
@@ -82,11 +84,11 @@ const CreateCommunity = ({ userId }: { userId: string }) => {
         bio: values.bio,
         createdById: userId,
       });
-  
       router.push(`/communities/${newCommunity.cid}`);
     } catch (error) {
       toast.error(error.message);
       console.log(error);
+      setIsSubmitting(false);
     }
   }
 
@@ -98,7 +100,7 @@ const CreateCommunity = ({ userId }: { userId: string }) => {
         <CustomInputField form={form} name='cid' alt="Unique cid" />
         <CustomTextArea form={form} name='bio' />
 
-        <Button type="submit" className='bg-primary-500'>Create Community</Button>
+        <Button type="submit" className='bg-primary-500' disabled={isSubmitting}>Create Community</Button>
       </form>
     </Form>
   )

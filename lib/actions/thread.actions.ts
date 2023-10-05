@@ -33,6 +33,7 @@ export async function createThread({
       },
       select: {
         id: true,
+        cid: true,
       },
     });
 
@@ -79,7 +80,7 @@ export async function createThread({
     if (communityIdObject) {
       await prismadb.communities.update({
         where: {
-          cid: communityIdObject.id,
+          cid: communityIdObject.cid,
         },
         data: {
           threads: {
@@ -137,32 +138,6 @@ export async function fetchThreads(pageNumber = 1, pageSize = 20) {
 
 export async function fetchThreadById(id: string) {
   try {
-    // TODO: populate Commmunity
-    // const thread = await Thread.findById(id)
-    //   .populate({
-    //     path: "author",
-    //     model: "User",
-    //     select: "_id id name image"
-    //   })
-    //   .populate({
-    //     path: "children",
-    //     populate: [
-    //       {
-    //         path: "author",
-    //         model: "User",
-    //         select: "_id id name parentId image"
-    //       },
-    //       {
-    //         path: "children",
-    //         model: "Thread",
-    //         populate: {
-    //           path: "author",
-    //           model: "User",
-    //           select: "_id id name parentId image"
-    //         }
-    //       }
-    //     ]
-    //   }).exec();
     const thread = await prismadb.threads.findUnique({
       where: {
         id,
@@ -245,32 +220,9 @@ export async function addCommentToThread({
 
 export async function deleteThread(threadId: string, path: string) {
   try {
-    const thread = await prismadb.threads.findUnique({
-      where: {
-        id: threadId,
-      },
-      include: {
-        children: true,
-      },
-    });
-
-    if (!thread) {
+    if (!threadId) {
       throw new Error("Thread not found");
     }
-    const userId = thread.authorId;
-    // remove all the thread's children recursively
-    // const deleteChildren = async (threadId: string) => {
-    //   const thread = await Thread.findById(threadId);
-    //   if(!thread) {
-    //     throw new Error("Thread not found");
-    //   }
-    //   if (thread.children.length > 0) {
-    //     for (const child of thread.children) {
-    //       await deleteChildren(child);
-    //     }
-    //   }
-    //   await Thread.findByIdAndDelete(threadId);
-    // };
 
     const deleteChildren = async (threadId: string) => {
       const thread = await prismadb.threads.findUnique({
@@ -290,37 +242,41 @@ export async function deleteThread(threadId: string, path: string) {
           await deleteChildren(child.id);
         }
       }
+      await prismadb.threads.update({
+        where: {
+          id: thread.id,
+        },
+        data: {
+          children: {
+            disconnect: {
+              id: threadId,
+            },
+          },
+        },
+      });
       await prismadb.threads.delete({
         where: {
-          id: threadId,
+          id: thread.id,
         },
       });
+      // remove likes from users
 
-      await prismadb.users.update({
-        where: {
-          uid: userId,
-        },
-        data: {
-          threads: {
-            disconnect: {
-              id: threadId,
+      if (thread.likedByIds.length > 0) {
+        for (const userId of thread.likedByIds) {
+          await prismadb.users.update({
+            where: {
+              id: userId,
             },
-          },
-        },
-      });
-
-      await prismadb.users.update({
-        where: {
-          uid: userId,
-        },
-        data: {
-          likedThreads: {
-            disconnect: {
-              id: threadId,
+            data: {
+              likedThreads: {
+                disconnect: {
+                  id: threadId,
+                },
+              },
             },
-          },
-        },
-      });
+          });
+        }
+      }
 
       const communityId = thread.communityId;
       if (communityId) {

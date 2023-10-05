@@ -11,13 +11,13 @@ const ThreadDetailsPage = async ({ params }: { params: { id : string }}) => {
   if (!id) return null;
   
   const user = await currentUser();
-  if(!user) return null;
+  if(!user) redirect('/sign-in');
 
   const userInfo = await fetchUser(user.id);
   if(!userInfo?.onboarded) redirect('/onboarding');
 
   const thread = await fetchThreadById(id);
-  if(!thread) return null;
+  if(!thread) redirect('/')
 
   return (
     <section className='relative'>

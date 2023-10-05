@@ -106,7 +106,6 @@ export async function fetchCommunityPosts(id: string) {
     const communityPosts = await prismadb.communities.findUnique({
       where: {
         cid: id,
-        OR: [{ id: id }],
       },
       include: {
         threads: {

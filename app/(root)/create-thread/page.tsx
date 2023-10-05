@@ -17,9 +17,9 @@ async function CreateThreadPage() {
     <div className="flex flex-col gap-8">
       <h1 className='head-text text-left'>Create Thread</h1>
 
-      <PostThread userId={userInfo.id} />
+      <PostThread userId={userInfo.id} communities={userInfo.communities} />
     </div>
   )
 }
 
-export default CreateThreadPage
+export default CreateThreadPage;

@@ -45,7 +45,8 @@ const ThreadCard = async ({
 }: 
   ThreadCardProps
 ) => {
-  const communityDetails = await fetchCommunityDetails(community ?? "");
+  const communityDetails = await fetchCommunityDetails(community ?? '');
+  console.log(communityDetails);
   const likeCount = await fetchLikeCount(id);
   const isLiked = currentUserId? await isLikedThread(id, currentUserId): false;
 
@@ -94,7 +95,7 @@ const ThreadCard = async ({
                 
               </div>
               {/* Commented user Profiles */}
-              {(!isComment && comments.length > 0) && (
+              {(comments.length > 0) && (
                 <Link href={`/thread/${id}`} className='flex flex-start gap-4'>
                   <p className='mt-1 text-subtle-medium text-gray-1'>
                     {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
@@ -125,6 +126,7 @@ const ThreadCard = async ({
 
       </div>
       {!isComment && community && communityDetails && (
+        
         <Link href={`/communities/${communityDetails.cid}`} className='mt-5 flex items-center'>
           <p className='text-subtle-medium text-gray-1'>{formatDateString(createdAt)} - {communityDetails.name} Community</p>
           <Image 

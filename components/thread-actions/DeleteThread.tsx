@@ -13,12 +13,21 @@ import {
 } from "@/components/ui/dialog"
 
 import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { usePathname, useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 
 export default function DeleteThread({ id, author, currentUserId }: { id: string, author: string, currentUserId: string }) {
-
+  const pathname = usePathname();
+  const router = useRouter();
   const deletePost = async () => {
-    const result = await deleteThread(id, '/');
+    try {
+      const result = await deleteThread(id, pathname);
+      toast.success('Thread Deleted Successfully');
+      router.back();
+    } catch (error) {
+      toast.error(error.message);
+    }
   }
   return (
     <Dialog>

@@ -18,6 +18,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { CommentValidation } from "@/lib/validations/thread";
 import Image from "next/image";
 import { addCommentToThread } from "@/lib/actions/thread.actions";
+import toast from "react-hot-toast";
+import { useState } from "react";
 
 interface CommentProps {
   threadId: string;
@@ -26,6 +28,7 @@ interface CommentProps {
 }
 
 const Comment = ({ threadId, currentUserId, currentUserImg } : CommentProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -36,14 +39,21 @@ const Comment = ({ threadId, currentUserId, currentUserImg } : CommentProps) => 
     }
   });
   async function onSubmit(values: z.infer<typeof CommentValidation>) {
-    await addCommentToThread({
-      threadId,
-      userId: JSON.parse(currentUserId),
-      commentText: values.thread,
-      path: pathname,
-    });
+    setIsSubmitting(true);
+    try {
+      await addCommentToThread({
+        threadId,
+        userId: JSON.parse(currentUserId),
+        commentText: values.thread,
+        path: pathname,
+      });
 
-    router.push('/')
+      router.push(pathname);
+      toast.success('Comment Posted Successfully');
+    } catch (error) {
+      toast.error(error.message);
+      setIsSubmitting(false);      
+    }
   }
   return (
     <Form {...form}> 
@@ -75,7 +85,7 @@ const Comment = ({ threadId, currentUserId, currentUserImg } : CommentProps) => 
           )}
         />
 
-        <Button type="submit" className="comment-form_btn">
+        <Button type="submit" className="comment-form_btn" disabled={isSubmitting}>
           Reply
         </Button>
       </form>

@@ -11,6 +11,7 @@ import { useUploadThing } from '@/lib/hooks/uploadthing';
 import { updateUser } from '@/lib/actions/user.actions';
 import { useRouter, usePathname } from 'next/navigation';
 import { CustomInputField, CustomProfilePhoto, CustomTextArea } from '../form-fields';
+import toast from 'react-hot-toast';
 
 type UserProps = {
   id: string;
@@ -29,6 +30,7 @@ type AccountProfileProps = {
 
 const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const { startUpload } = useUploadThing("media");
   const router = useRouter();
@@ -64,31 +66,39 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
   }
 
   async function onSubmit(values: z.infer<typeof UserValidation>) {
-    const blob = values.profile_photo;
+    setIsSubmitting(true);
+      try {
+        const blob = values.profile_photo;
 
-    const hasImageChanged = isBase64Image(blob);
+      const hasImageChanged = isBase64Image(blob);
 
-    if (hasImageChanged) {
-      const imgRes = await startUpload(files);
-      // TODO: deprecated
-      if (imgRes && imgRes[0].url) {
-        values.profile_photo = imgRes[0].url;
+      if (hasImageChanged) {
+        const imgRes = await startUpload(files);
+        // TODO: deprecated
+        if (imgRes && imgRes[0].url) {
+          values.profile_photo = imgRes[0].url;
+        }
       }
-    }
 
-    await updateUser({
-      userId: user.id,
-      username: values.username,
-      name: values.name,
-      bio: values.bio,
-      image: values.profile_photo,
-      path: pathname,
-    });
+      await updateUser({
+        userId: user.id,
+        username: values.username,
+        name: values.name,
+        bio: values.bio,
+        image: values.profile_photo,
+        path: pathname,
+      });
 
-    if (pathname === '/profile/edit') {
-      router.back();
-    } else {
-      router.push('/');
+      if (pathname === '/profile/edit') {
+        router.back();
+      } else {
+        router.push('/');
+      }
+      toast.success('Profile Updated Successfully');
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+      setIsSubmitting(false);
     }
   }
 
@@ -100,7 +110,7 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
         <CustomInputField form={form} name='username' />
         <CustomTextArea form={form} name='bio' />
 
-        <Button type="submit" className='bg-primary-500'>{btnTitle}</Button>
+        <Button type="submit" className='bg-primary-500' disabled={isSubmitting}>{btnTitle}</Button>
       </form>
     </Form>
   )

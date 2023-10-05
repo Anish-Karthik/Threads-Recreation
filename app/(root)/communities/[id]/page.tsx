@@ -78,7 +78,7 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
           <TabsContent value={"requests"} className='w-full text-light-1'>
             <ThreadsTab
               currentUserId={user.id}
-              accountId={communityDetails.id}
+              accountId={communityDetails.cid}
               accountType="Community"
             />
           </TabsContent>        
