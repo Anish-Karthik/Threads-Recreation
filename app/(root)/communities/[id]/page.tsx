@@ -46,9 +46,8 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
                 />
                 <p className='max-sm:hidden'>{tab.label}</p>
 
-                {tab.label === 'Threads' && (
-                  <p className='ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2'>{communityDetails?.threads?.length}</p>
-                )}
+                
+                {communityDetails[tab.value] && <p className='ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2'>{communityDetails[tab.value]?.length}</p>}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -56,13 +55,13 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
           <TabsContent value={"threads"} className='w-full text-light-1'>
             <ThreadsTab
               currentUserId={user.id}
-              accountId={communityDetails.id}
+              accountId={communityDetails.cid}
               accountType="Community"
             />
           </TabsContent>
           <TabsContent value={"members"} className='w-full text-light-1'>
             <section className='mt-9 flex flex-col gap-10'>
-              {communityDetails.members.map((member: any) => (
+              {communityDetails.members.map((member) => (
                 <UserCard
                   key={member.uid}
                   id={member.uid}

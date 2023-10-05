@@ -52,8 +52,15 @@ export async function createCommunity({
         image,
         bio,
         createdById: user.id,
+        members: {
+          connect: {
+            id: user.id,
+          },
+        },
       },
     });
+
+    
 
     // Update User model
     await prismadb.users.update({
@@ -84,6 +91,28 @@ export async function fetchCommunityDetails(id: string | null) {
     const communityDetails = await prismadb.communities.findUnique({
       where: {
         cid: id,
+      },
+      include: {
+        createdBy: true,
+        members: true,
+        threads: true,
+      },
+    });
+
+    return communityDetails ?? null;
+  } catch (error) {
+    // Handle any errors
+    console.error("Error fetching community details:", error);
+    throw error;
+  }
+}
+export async function fetchCommunityDetailsById(id: string | null) {
+  try {
+    if (!id) return null;
+
+    const communityDetails = await prismadb.communities.findUnique({
+      where: {
+        id: id,
       },
       include: {
         createdBy: true,

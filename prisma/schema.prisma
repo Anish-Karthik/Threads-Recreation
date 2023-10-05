@@ -24,11 +24,22 @@ model users {
   likedThreads   threads[] @relation("LikedThread", fields: [likedThreadIds], references: [id]) // likedBy
   likedThreadIds String[]  @db.ObjectId
 
-  communities         communities[]
+  communities communities[]
+
   createdCommunities  communities[] @relation("Member", fields: [createdCommunityIds], references: [id])
   createdCommunityIds String[]      @db.ObjectId
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @default(now())
+
+  requestedCommunities  communities[] @relation("Request", fields: [requestedCommunityIds], references: [id]) //request to community
+  requestedCommunityIds String[]      @db.ObjectId
+
+  moderatedCommunities  communities[] @relation("Moderator", fields: [moderatedCommunityIds], references: [id]) //moderator of community
+  moderatedCommunityIds String[]      @db.ObjectId
+
+  invitedCommunities  communities[] @relation("Invite", fields: [invitedCommunityIds], references: [id]) //invite from community
+  invitedCommunityIds String[]      @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 model threads {
@@ -67,6 +78,15 @@ model communities {
 
   members    users[]  @relation("Member", fields: [membersIds], references: [id]) //community
   membersIds String[] @db.ObjectId
+
+  requests    users[]  @relation("Request", fields: [requestsIds], references: [id]) //request to community
+  requestsIds String[] @db.ObjectId
+
+  moderators    users[]  @relation("Moderator", fields: [moderatorsIds], references: [id]) //moderator of community
+  moderatorsIds String[] @db.ObjectId
+
+  invites    users[]  @relation("Invite", fields: [invitesIds], references: [id]) //invite from community
+  invitesIds String[] @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())

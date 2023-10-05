@@ -1,4 +1,4 @@
-import { fetchCommunityDetails } from '@/lib/actions/community.actions';
+import { fetchCommunityDetailsById } from '@/lib/actions/community.actions';
 import { cn, formatDateString } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -45,8 +45,7 @@ const ThreadCard = async ({
 }: 
   ThreadCardProps
 ) => {
-  const communityDetails = await fetchCommunityDetails(community ?? '');
-  console.log(communityDetails);
+  const communityDetails = await fetchCommunityDetailsById(community || '');
   const likeCount = await fetchLikeCount(id);
   const isLiked = currentUserId? await isLikedThread(id, currentUserId): false;
 
@@ -127,7 +126,7 @@ const ThreadCard = async ({
       </div>
       {!isComment && community && communityDetails && (
         
-        <Link href={`/communities/${communityDetails.cid}`} className='mt-5 flex items-center'>
+        <Link href={`/communities/${communityDetails.cid}`} className='mt-5 flex items-center'> 
           <p className='text-subtle-medium text-gray-1'>{formatDateString(createdAt)} - {communityDetails.name} Community</p>
           <Image 
             src={communityDetails.image}
