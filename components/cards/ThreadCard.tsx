@@ -4,9 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react'
 import DeleteThread from '../forms/DeleteEntity';
-import { fetchLikeCount, isLikedThread } from '@/lib/actions/thread.actions';
+import { deleteThread, fetchLikeCount, isLikedThread } from '@/lib/actions/thread.actions';
 import LikeThread from '../thread-actions/LikeThread';;
 import ShareThread from '../thread-actions/ShareThread';
+import DeleteEntity from '../forms/DeleteEntity';
 
 interface ThreadCardProps {
   key: string;
@@ -71,14 +72,16 @@ const ThreadCard = async ({
               <Link href={`/profile/${author.uid}`} className='w-fit'>
                 <h4 className='cursor-pointer text-base-semibold text-light-2'>{author.name}</h4>
               </Link>
-              <div className='flex gap-2'>
-                <DeleteThread id={id} author={author.uid} currentUserId={currentUserId} />
-                {currentUserId && currentUserId==author.uid && 
+
+              {currentUserId && currentUserId==author.uid && 
+                <div className='flex gap-2'>
+                  <DeleteEntity id={id} type="Thread" deleteCallback={deleteThread} />
                   <Link href={`/thread/${id}/edit`}>
                     <Image src="/assets/edit.svg" alt='edit' width={24} height={24} className='cursor-pointer object-contain'/>
                   </Link>
-                }
-              </div>
+                </div>
+              }
+              
             </div>
 
             <p className='mt-2 text-small-regular text-light-2'>{content}</p>
