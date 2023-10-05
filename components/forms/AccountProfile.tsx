@@ -42,7 +42,7 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
       username: user.username || '',
       name: user.name || '',
       bio: user.bio || '',
-      profile_photo: user.image,
+      profile_photo: user.image || '',
     }
   });
 
@@ -105,7 +105,7 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-start gap-10">
-        <CustomProfilePhoto form={form} handleImageChange={handleImageChange} name='profile' />
+        <CustomProfilePhoto form={form} handleImageChange={handleImageChange} name='profile_photo' />
         <CustomInputField form={form} name='name' />
         <CustomInputField form={form} name='username' />
         <CustomTextArea form={form} name='bio' />

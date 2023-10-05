@@ -8,6 +8,7 @@ import { deleteThread, fetchLikeCount, isLikedThread } from '@/lib/actions/threa
 import LikeThread from '../thread-actions/LikeThread';;
 import ShareThread from '../thread-actions/ShareThread';
 import DeleteEntity from '../forms/DeleteEntity';
+import { fetchUser } from '@/lib/actions/user.actions';
 
 interface ThreadCardProps {
   key: string;
@@ -48,7 +49,8 @@ const ThreadCard = async ({
 ) => {
   const communityDetails = await fetchCommunityDetailsById(community || '');
   const likeCount = await fetchLikeCount(id);
-  const isLiked = currentUserId? await isLikedThread(id, currentUserId): false;
+  const userInfo = await fetchUser(currentUserId);
+  const isLiked = userInfo? await isLikedThread(id, currentUserId): false;
 
   return (
     <article className={cn('flex flex-col w-full rounded-xl', isComment? 'px-0 xs:px-7 py-3': 'bg-dark-2 p-7')}>

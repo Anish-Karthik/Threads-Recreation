@@ -339,23 +339,6 @@ export async function fetchLikedThreads(userId: string) {
       throw new Error("User not found");
     }
 
-    // const likedThreads = await Thread.find({
-    //   _id: { $in: user.likedThreads },
-    // })
-    //   .populate({
-    //     path: "author",
-    //     model: "User",
-    //     select: "_id id name parentId image",
-    //   })
-    //   .populate({
-    //     path: "children",
-    //     populate: {
-    //       path: "author",
-    //       model: "User",
-    //       select: "_id id name parentId image",
-    //     },
-    //   })
-    //   .exec();
     const likedThreads = await prismadb.threads.findMany({
       where: {
         id: {

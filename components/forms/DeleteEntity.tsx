@@ -1,5 +1,5 @@
 "use client"
-import { deleteThread } from '@/lib/actions/thread.actions';
+
 import Image from 'next/image';
 import { Button } from "@/components/ui/button"
 import {
@@ -15,16 +15,24 @@ import {
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { usePathname, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useAuth } from '@clerk/nextjs';
 
 
 export default function DeleteEntity({ id, type, deleteCallback }: { id: string,  type: "Thread" | "Community" | "User", deleteCallback: any }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { signOut } = useAuth();
   const deletePost = async () => {
     try {
       const result = await deleteCallback(id, pathname);
       toast.success(`${type} Deleted Successfully`);
-      router.push('/');
+      if(type === "User") {
+        router.push('/sign-up');
+        // TODO: logout user
+        signOut();
+      } else{
+        router.push('/');
+      }
     } catch (error) {
       toast.error(error.message);
     }

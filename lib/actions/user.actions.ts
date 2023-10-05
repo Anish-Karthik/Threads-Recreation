@@ -190,12 +190,15 @@ export async function fetchUsers({
 
 export async function deleteUser(uid: string, path: string) {
   try {
-    const user = fetchUser(uid);
+    const user = await fetchUser(uid);
+    if (!user) {
+      throw new Error("User not found");
+    }
     // Delete user's threads
     // TODO: Optimize this with group by get and delete, using skip
     const userThreads = await prismadb.threads.findMany({
       where: {
-        authorId: uid,
+        authorId: user.id,
       },
     });
     userThreads.forEach(async (thread) => {
@@ -203,7 +206,7 @@ export async function deleteUser(uid: string, path: string) {
     });
 
     // Delete user's liked threads
-    const userLikedThreads = await getActivityLikedByUser(uid);
+    const userLikedThreads = await getActivityLikedByUser(user.id);
     userLikedThreads.forEach(async (thread) => {
       await prismadb.threads.update({
         where: {
@@ -212,7 +215,7 @@ export async function deleteUser(uid: string, path: string) {
         data: {
           likedBy: {
             disconnect: {
-              id: uid,
+              id: user.id,
             },
           },
         },
@@ -222,7 +225,7 @@ export async function deleteUser(uid: string, path: string) {
     // TODO: Delete user created communities if no other moderators
     const userCreatedCommunities = await prismadb.communities.findMany({
       where: {
-        createdById: uid,
+        createdById: user.id,
       },
     });
 

@@ -14,6 +14,7 @@ const ProfilePage = async ({ params }: { params: {id: string } }) => {
   if(!user)  return null;
 
   const userInfo = await fetchUser(params.id);
+  if(!userInfo) return redirect('/');
 
   if(!userInfo?.onboarded) redirect('/onboarding');
 
