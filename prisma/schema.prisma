@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = env("MONGO_URI")
+  url      = env("DATABASE_URL")
 }
 
 model users {
@@ -22,11 +22,11 @@ model users {
   threads threads[] // author
 
   likedThreads   threads[] @relation("LikedThread", fields: [likedThreadIds], references: [id]) // likedBy
-  likedThreadIds String[]   @db.ObjectId
+  likedThreadIds String[]  @db.ObjectId
 
   communities         communities[]
   createdCommunities  communities[] @relation("Member", fields: [createdCommunityIds], references: [id])
-  createdCommunityIds String[]       @db.ObjectId
+  createdCommunityIds String[]      @db.ObjectId
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @default(now())
 }
@@ -43,7 +43,7 @@ model threads {
   communityId String?      @db.ObjectId
 
   likedBy    users[]  @relation("LikedThread", fields: [likedByIds], references: [id])
-  likedByIds String[]  @db.ObjectId
+  likedByIds String[] @db.ObjectId
 
   children threads[] @relation("Comment")
   parent   threads?  @relation("Comment", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -67,7 +67,7 @@ model communities {
   threads threads[] //community
 
   members    users[]  @relation("Member", fields: [membersIds], references: [id]) //community
-  membersIds String[]  @db.ObjectId
+  membersIds String[] @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
