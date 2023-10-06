@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import JoinOrLeave from '../thread-actions/JoinOrLeave';
 import { acceptUserRequest } from '@/lib/actions/community.actions';
-import { useAuth } from '@clerk/nextjs';
 import { acceptCommunityInvite } from '@/lib/actions/user.actions';
 
 interface UserCardProps {

@@ -121,9 +121,7 @@ export async function fetchUsers({
   sortBy?: "asc" | "desc";
 }) {
   try {
-    const skipAmount = (pageNumber - 1) + pageSize;
-
-    const regex = new RegExp(searchString, "i");
+    const skipAmount = (pageNumber - 1) * pageSize;
 
     type QueryType = {
       OR: [
@@ -166,7 +164,7 @@ export async function fetchUsers({
     };
 
     const users = await prismadb.users.findMany({
-      where: query,
+      where: query as typeof query,
       select: {
         uid: true,
         name: true,
