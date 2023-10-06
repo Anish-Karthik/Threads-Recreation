@@ -95,6 +95,9 @@ export async function fetchCommunityDetails(id: string | null) {
         createdBy: true,
         members: true,
         threads: true,
+        moderators: true,
+        requests: true,
+        invites: true,
       },
     });
 
@@ -255,14 +258,12 @@ export async function addMemberToCommunity(
         members: true,
       },
     });
+    // Find the user by their unique id
+    const user = await fetchUser(memberId);
 
     if (!community) {
       throw new Error("Community not found");
     }
-
-    // Find the user by their unique id
-    const user = await fetchUser(memberId);
-
     if (!user) {
       throw new Error("User not found");
     }
@@ -322,7 +323,6 @@ export async function removeUserFromCommunity(
       },
     });
 
-
     return { success: true };
   } catch (error) {
     // Handle any errors
@@ -366,11 +366,11 @@ export async function updateCommunityInfo({
   }
 }
 
-export async function deleteCommunity(communityId: string, path: string) {
+export async function deleteCommunity(cid: string, path: string) {
   try {
     // Find the community by its ID and delete it
-    console.log("communityId", communityId);
-    const community = await fetchCommunityDetails(communityId);
+    console.log("cid", cid);
+    const community = await fetchCommunityDetails(cid);
 
     if (!community) {
       throw new Error("Community not found");
@@ -391,7 +391,7 @@ export async function deleteCommunity(communityId: string, path: string) {
     // Delete the community
     const deletedCommunity = await prismadb.communities.delete({
       where: {
-        cid: communityId,
+        cid: cid,
       },
     });
 
@@ -403,36 +403,171 @@ export async function deleteCommunity(communityId: string, path: string) {
   }
 }
 
-export async function isCommunityMember(communityId: string, id: string) {
+export async function isCommunityMember(cid: string, id: string) {
   try {
-    const communities = await fetchCommunityDetails(communityId);
+    const communities = await fetchCommunityDetails(cid);
 
     if (!communities) {
       throw new Error("Community not found");
     }
-    console.log("communities", communities.membersIds, id);
+    // console.log("communities", communities.membersIds, id);
 
     return !!communities.membersIds.includes(id);
   } catch (error) {}
 }
 
-// export async function inviteUserToCommunity(communityId: string, id: string) {
-//   try {
-//     const community = await fetchCommunityDetails(communityId);
-    
-//     await prismadb.communities.update({
-//       where: {
-//         cid: communityId,
-//       },
-//       data: {
-//         invited: {
-//           connect: {
-//             id: id,
-//           },
-//         },
-//       },
-//     });
-//   } catch (error) {
-    
-//   }
-// }
+export async function inviteUserToCommunity(cid: string, uid: string) {
+  try {
+    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid);
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await prismadb.communities.update({
+      where: {
+        cid: cid,
+      },
+      data: {
+        invites: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    await prismadb.users.update({
+      where: {
+        uid: uid,
+      },
+      data: {
+        invitedCommunities: {
+          connect: {
+            id: community.id,
+          },
+        },
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error inviting user to community: ", error);
+    throw error;
+  }
+}
+
+export async function acceptUserRequest(cid: string, uid: string) {
+  try {
+    const user = await fetchUser(uid);
+    const community = await fetchCommunityDetails(cid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // update community
+    await prismadb.communities.update({
+      where: {
+        cid: cid,
+      },
+      data: {
+        requests: {
+          disconnect: {
+            id: user.id,
+          },
+        },
+        members: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    // update user
+    await prismadb.users.update({
+      where: {
+        uid: uid,
+      },
+      data: {
+        requestedCommunities: {
+          disconnect: {
+            id: community.id,
+          },
+        },
+        communities: {
+          connect: {
+            id: community.id,
+          },
+        },
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error accepting community request: ", error);
+    throw error;
+  }
+}
+
+export async function fetchRequestedUsers(cid: string) {
+  try {
+    const requests = await prismadb.communities.findUnique({
+      where: {
+        cid: cid,
+      },
+      include: {
+        requests: true,
+      },
+    });
+
+    return requests.requests;
+  } catch (error) {
+    console.error("Error fetching community invites: ", error);
+    throw error;
+  }
+}
+
+export async function isCommunityModerator(cid: string, uid: string) {
+  try {
+    const user = await fetchUser(uid);
+    const community = await fetchCommunityDetails(cid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return community.moderatorsIds.includes(user.id);
+  } catch (error) {
+    console.error("Error checking if user is moderator: ", error);
+    throw error;
+  }
+}
+
+export async function isPendingRequest(cid: string, uid: string) {
+  try {
+    const user = await fetchUser(uid);
+    const community = await fetchCommunityDetails(cid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return community.requestsIds.includes(user.id);
+  } catch (error) {
+    console.error("Error checking if user is moderator: ", error);
+    throw error;
+  }
+}

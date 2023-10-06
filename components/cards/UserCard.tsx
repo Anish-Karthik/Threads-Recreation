@@ -3,6 +3,10 @@ import Image from 'next/image';
 import React from 'react'
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import JoinOrLeave from '../thread-actions/JoinOrLeave';
+import { acceptUserRequest } from '@/lib/actions/community.actions';
+import { useAuth } from '@clerk/nextjs';
+import { acceptCommunityInvite } from '@/lib/actions/user.actions';
 
 interface UserCardProps {
   key: string;
@@ -11,6 +15,9 @@ interface UserCardProps {
   username: string;
   imgUrl: string;
   personType: "User" | "Community";
+  inviteType?: "Requests" | "Invites";
+  communityId?: string;
+  userId?: string;
 }
 
 const UserCard = ({
@@ -20,6 +27,9 @@ const UserCard = ({
   username,
   imgUrl,
   personType,
+  inviteType,
+  communityId,
+  userId
 }: UserCardProps) => {
   const router = useRouter();
 
@@ -54,6 +64,15 @@ const UserCard = ({
       >
         View
       </Button>
+      {inviteType && userId && communityId && 
+        <JoinOrLeave 
+          communityId={communityId}
+          isMember={false}
+          onActionCallback={inviteType === "Invites"? acceptCommunityInvite: acceptUserRequest}
+          memberId={userId}
+          text='Accept'
+        />
+      }
     </article>
   )
 }

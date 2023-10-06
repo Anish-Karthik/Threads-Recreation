@@ -2,8 +2,8 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link';
 import DeleteEntity from '../forms/DeleteEntity';
-import { deleteUser } from '@/lib/actions/user.actions';
-import { addMemberToCommunity, deleteCommunity, removeUserFromCommunity } from '@/lib/actions/community.actions';
+import { deleteUser, requestToJoinCommunity } from '@/lib/actions/user.actions';
+import { addMemberToCommunity, deleteCommunity, inviteUserToCommunity, removeUserFromCommunity } from '@/lib/actions/community.actions';
 import JoinOrLeave from '../thread-actions/JoinOrLeave';
 
 interface ProfileHeaderProps {
@@ -16,6 +16,7 @@ interface ProfileHeaderProps {
   type?: 'User' | 'Community';
   editable?: boolean;
   isMember?: boolean;
+  canRequest?: boolean;
 }
 
 const ProfileHeader = ({
@@ -28,6 +29,7 @@ const ProfileHeader = ({
   type = 'User',
   editable = false,
   isMember = false,
+  canRequest = true,
 }: ProfileHeaderProps) => {
 
   
@@ -59,10 +61,17 @@ const ProfileHeader = ({
           </div>
         </div>  
           
-        <div>
+        <div className='flex gap-2'>
+          {!isMember && canRequest && (type === "Community"? (
+            <JoinOrLeave text={"Request"} isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={requestToJoinCommunity} />
+          ): (
+            <JoinOrLeave text={"Invite"} isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={inviteUserToCommunity} />
+          ))}
+
           { type === "Community" && (
             <JoinOrLeave isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={isMember?removeUserFromCommunity: addMemberToCommunity} />
           )}
+
         </div>
         
       </div>

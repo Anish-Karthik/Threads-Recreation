@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import prismadb from "./prismadb";
 import { deleteThread } from "./thread.actions";
 import { getActivityLikedByUser } from "./activity.actions";
-import { deleteCommunity } from "./community.actions";
+import { deleteCommunity, fetchCommunityDetails } from "./community.actions";
 
 type UpdateUserProps = {
   userId: string;
@@ -67,6 +67,10 @@ export async function fetchUser(userId: string) {
         communities: true,
         threads: true,
         likedThreads: true,
+        createdCommunities: true,
+        invitedCommunities: true,
+        moderatedCommunities: true,
+        requestedCommunities: true,
       },
     });
   } catch (error: any) {
@@ -117,7 +121,7 @@ export async function fetchUsers({
   sortBy?: "asc" | "desc";
 }) {
   try {
-    const skipAmount = (pageNumber - 1) * pageSize;
+    const skipAmount = (pageNumber - 1) + pageSize;
 
     const regex = new RegExp(searchString, "i");
 
@@ -243,5 +247,106 @@ export async function deleteUser(uid: string, path: string) {
     revalidatePath(path);
   } catch (error: any) {
     throw new Error(`Failed to delete user: ${error.message}`);
+  }
+}
+
+export async function fetchInvitedCommunities(uid: string) {
+  try {
+    const invites = await prismadb.users.findUnique({
+      where: {
+        uid: uid,
+      },
+      include: {
+        invitedCommunities: true,
+        communities: true,
+      },
+    });
+
+    return invites.invitedCommunities;
+  } catch (error) {
+    console.error("Error fetching community invites: ", error);
+    throw error;
+  }
+}
+
+export async function requestToJoinCommunity(cid: string, uid: string) {
+  try {
+    const user = await fetchUser(uid);
+    const community = await fetchCommunityDetails(cid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await prismadb.communities.update({
+      where: {
+        cid: cid,
+      },
+      data: {
+        requests: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    return { sucess: true };
+  } catch (error) {
+    console.error("Error Requesting to community: ", error);
+    throw error;
+  }
+}
+
+export async function acceptCommunityInvite(cid: string, uid: string) {
+  try {
+    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await prismadb.communities.update({
+      where: {
+        cid: cid,
+      },
+      data: {
+        invites: {
+          disconnect: {
+            id: user.id,
+          },
+        },
+        members: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    await prismadb.users.update({
+      where: {
+        uid: uid,
+      },
+      data: {
+        invitedCommunities: {
+          disconnect: {
+            id: community.id,
+          },
+        },
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error accepting community invite: ", error);
+    throw error;
   }
 }

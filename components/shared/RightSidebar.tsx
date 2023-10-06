@@ -27,7 +27,7 @@ async function RightSidebar() {
           {communities?.communities.map((community) => (
             <CommunityCard
               key={community.id}
-              id={community.id}
+              id={community.cid}
               name={community.name}
               cid={community.cid}
               imgUrl={community.image}

@@ -24,9 +24,10 @@ type props = {
   memberId: string;
   onActionCallback: any;
   isMember: boolean;
+  text?: string;
 }
 
-const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember }: props) => {
+const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember, text }: props) => {
   
   const pathname = usePathname();
   const router = useRouter();
@@ -45,11 +46,11 @@ const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember }: prop
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={isMember?"destructive":"default"}  className={cn('text-subtle-medium cursor-pointer',isMember ?"":"text-gray-1")}>{isMember? "Leave": "Join"}</Button>
+        <Button variant={isMember?"destructive":"default"}  className={cn('text-subtle-medium cursor-pointer user-card_btn',isMember ?"":"text-gray-1")}>{isMember? "Leave": text || "Join"}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-dark-2 text-light-2"  >
         <DialogHeader>
-          <DialogTitle className='text-light-2'>{isMember?"Leave Community":"Join Community"}</DialogTitle>
+          <DialogTitle className='text-light-2'>{(isMember?"Leave": text || "Join") + " Community"}</DialogTitle>
           <DialogDescription>
             {isMember? "Are you sure you want to leave this community?" : "Do you want to join this community?"}.
           </DialogDescription>
@@ -60,7 +61,7 @@ const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember }: prop
               <Button variant={"secondary"} >Cancel</Button>
             </DialogPrimitive.Close>
             <DialogPrimitive.Close>
-              <Button variant={isMember?"destructive":"secondary"} disabled={isSubmiting} onClick={handleAction} >{isMember?"Leave":"Join"}</Button>
+              <Button variant={isMember?"destructive":"secondary"} disabled={isSubmiting} onClick={handleAction} >{isMember?"Leave": text || "Join"}</Button>
             </DialogPrimitive.Close>
             
           </div>

@@ -1,7 +1,9 @@
+import UserCard from '@/components/cards/UserCard';
 import ProfileHeader from '@/components/shared/ProfileHeader';
 import ThreadsTab from '@/components/shared/ThreadsTab';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { profileTabs } from '@/constants';
+import { fetchInvitedCommunities } from '@/lib/actions/user.actions';
 import { fetchUser } from '@/lib/actions/user.actions';
 import { currentUser } from '@clerk/nextjs'
 import Image from 'next/image';
@@ -15,8 +17,9 @@ const ProfilePage = async ({ params }: { params: {id: string } }) => {
 
   const userInfo = await fetchUser(params.id);
   if(!userInfo) return redirect('/');
-
   if(!userInfo?.onboarded) redirect('/onboarding');
+
+  const communityInvites = await fetchInvitedCommunities(userInfo.uid);
 
 
   return (
@@ -51,15 +54,33 @@ const ProfilePage = async ({ params }: { params: {id: string } }) => {
               </TabsTrigger>
             ))}
           </TabsList>
-          {profileTabs.map((tab) => (
-            <TabsContent key={tab.label} value={tab.value} className='w-full text-light-1'>
+          {profileTabs.map((tab, ind) => {
+            if(tab.label === "Invites") 
+              return (
+                <TabsContent key={tab.label} value={tab.value} className='w-full text-light-1'>
+                  {communityInvites && communityInvites.map((invitedCommunity) => (
+                    <UserCard
+                      key={invitedCommunity.id}
+                      id={invitedCommunity.cid}
+                      name={invitedCommunity.name}
+                      username={invitedCommunity.cid}
+                      imgUrl={invitedCommunity.image}
+                      personType='Community'
+                      
+                    />
+                  ))}
+                </TabsContent>
+              )
+
+
+            return (<TabsContent key={tab.label} value={tab.value} className='w-full text-light-1'>
               <ThreadsTab
                 currentUserId={user.id}
                 accountId={userInfo.uid}
                 accountType="User"
               />
-            </TabsContent>
-          ))}
+            </TabsContent>)
+          })}
         </Tabs>
       </div>
 
