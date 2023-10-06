@@ -2,7 +2,6 @@ import CommunityCard from "@/components/cards/CommunityCard";
 import Pagination from "@/components/shared/Pagination";
 import Searchbar from "@/components/shared/Searchbar";
 import { fetchCommunities } from "@/lib/actions/community.actions";
-import Image from "next/image";
 import { PlusCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -60,7 +59,7 @@ export default CommunityPage
 function CreateCommunityCard() {
   return (
     <Link href={'/create-community'}>
-      <Button variant={"secondary"} className='bg-dark-2 flex items-center gap-4 text-light-2 hover:text-dark-2 h-full'>
+      <Button className=' user-card_btn bg-dark-2 flex items-center gap-4 text-light-2 hover:text-dark-2 h-full'>
         <PlusCircleIcon size={38} />
         <p className='text-body-normal '>Create</p>
       </Button>

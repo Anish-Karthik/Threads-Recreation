@@ -57,9 +57,7 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
                     className='object-contain'
                   />
                   <p className='max-sm:hidden'>{tab.label}</p>
-
-                  
-                  {communityDetails[tab.value] && <p className='ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2'>{communityDetails[tab.value]?.length}</p>}
+                  {communityDetails[tab.value]?.length > 0 && <p className='ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2'>{communityDetails[tab.value].length}</p>}
                 </TabsTrigger>)
             })}
           </TabsList>
@@ -86,21 +84,23 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
             </section>
 
           </TabsContent>          
-          {isModerator && <TabsContent value={"requests"} className='w-full text-light-1'>
-            {userRequests && userRequests.map((requestedUser) => (
-              <UserCard
-                key={requestedUser.id}
-                id={requestedUser.uid}
-                name={requestedUser.name}
-                username={requestedUser.username}
-                imgUrl={requestedUser.image}
-                personType='User'
-                inviteType='Requests'
-                communityId={communityDetails.cid}
-                userId={requestedUser.uid}
-              />
-            ))}
-          </TabsContent>}        
+          {isModerator && 
+            <TabsContent value={"requests"} className='w-full text-light-1'>
+              {userRequests && userRequests.map((requestedUser) => (
+                <UserCard
+                  key={requestedUser.id}
+                  id={requestedUser.uid}
+                  name={requestedUser.name}
+                  username={requestedUser.username}
+                  imgUrl={requestedUser.image}
+                  personType='User'
+                  inviteType='Requests'
+                  communityId={communityDetails.cid}
+                  userId={requestedUser.uid}
+                />
+              ))}
+            </TabsContent>
+          }        
         </Tabs>
       </div>
 

@@ -369,7 +369,6 @@ export async function updateCommunityInfo({
 export async function deleteCommunity(cid: string, path: string) {
   try {
     // Find the community by its ID and delete it
-    console.log("cid", cid);
     const community = await fetchCommunityDetails(cid);
 
     if (!community) {
@@ -410,7 +409,7 @@ export async function isCommunityMember(cid: string, id: string) {
     if (!communities) {
       throw new Error("Community not found");
     }
-    // console.log("communities", communities.membersIds, id);
+
 
     return !!communities.membersIds.includes(id);
   } catch (error) {}

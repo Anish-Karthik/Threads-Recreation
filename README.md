@@ -40,13 +40,14 @@
     <li>Created Community Card and Community Page and action</li>
     <li>Server Actions for Community CRUD</li>
     <li>Delete and Edit Community</li> 
+    <li>Implement add/remove member</li>
   </ul>
   <br>
 </ul>
 
 ## Todo
 <ul>
-  <li>Implement add/remove member</li>
+  
   <li>Implement add/remove moderator</li>
   <li>Implement auto assign any moderator as creator if creator leaves or account is deleted</li>
   <li>Implement repost</li>

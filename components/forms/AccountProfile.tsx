@@ -74,7 +74,7 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
 
       if (hasImageChanged) {
         const imgRes = await startUpload(files);
-        // TODO: deprecated
+        
         if (imgRes && imgRes[0].url) {
           values.profile_photo = imgRes[0].url;
         }

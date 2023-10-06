@@ -1,5 +1,4 @@
 import { fetchUserPosts } from '@/lib/actions/user.actions';
-import { redirect } from 'next/navigation';
 import React from 'react'
 import ThreadCard from '../cards/ThreadCard';
 import { fetchCommunityPosts } from '@/lib/actions/community.actions';
@@ -29,8 +28,8 @@ const ThreadsTab = async ({
             parentId={thread.parentId}
             comments={thread.children}
             content={thread.text}
-            author={result} //todo
-            community={thread.communityId} //todo
+            author={result} 
+            community={thread.communityId} 
             createdAt={thread.createdAt.toDateString()}
             isComment={true}
           />
@@ -41,7 +40,7 @@ const ThreadsTab = async ({
     )
   } 
   const result = await fetchCommunityPosts(accountId);
-  console.log(result);
+
   if(!result) return <>{result?.id}</>;
   return (
     <section className='mt-9 flex flex-col gap-10'>

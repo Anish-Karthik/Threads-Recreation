@@ -47,7 +47,6 @@ export async function createThread({
     });
 
     if (!createdThread) {
-      console.log("Failed to create thread");
       throw new Error("Failed to create thread");
     }
 
@@ -60,7 +59,6 @@ export async function createThread({
       },
     });
     if (!user) {
-      console.log("User not found");
       throw new Error("User not found");
     }
 
@@ -162,7 +160,7 @@ export async function fetchThreadById(id: string) {
 
     return thread;
   } catch (error: any) {
-    console.log(error);
+    console.error(`Failed to fetch thread: ${error.message}`);
     throw new Error(`Failed to fetch thread: ${error.message}`);
   }
 }
