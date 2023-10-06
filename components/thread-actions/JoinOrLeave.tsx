@@ -17,6 +17,7 @@ import {
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { usePathname, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { cn } from '@/lib/utils';
 
 type props = {
   communityId: string;
@@ -44,7 +45,7 @@ const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember }: prop
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button  className='text-subtle-medium text-gray-1 cursor-pointer'>{isMember? "Leave": "Join"}</Button>
+        <Button variant={isMember?"destructive":"default"}  className={cn('text-subtle-medium cursor-pointer',isMember ?"":"text-gray-1")}>{isMember? "Leave": "Join"}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-dark-2 text-light-2"  >
         <DialogHeader>
