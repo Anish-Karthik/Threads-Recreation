@@ -41,6 +41,8 @@ const ThreadsTab = async ({
     )
   } 
   const result = await fetchCommunityPosts(accountId);
+  console.log(result);
+  if(!result) return <>{result?.id}</>;
   return (
     <section className='mt-9 flex flex-col gap-10'>
       {result && result.threads.map((thread) => (

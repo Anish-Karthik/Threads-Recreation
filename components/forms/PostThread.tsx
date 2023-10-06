@@ -3,49 +3,67 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Textarea } from '@/components/ui/textarea';
 import { useRouter, usePathname } from 'next/navigation';
 import { ThreadValidation } from "@/lib/validations/thread";
 import { createThread } from "@/lib/actions/thread.actions";
-import { useOrganization } from "@clerk/nextjs";
+import { communities } from "@prisma/client";
+import toast from "react-hot-toast";
+import { useState } from "react";
+import { CustomTextArea } from "../form-fields";
 
-const PostThread = ({ userId }: {userId: string}) => {
+const PostThread = ({ userId, communities }: { userId: string, communities: communities[] }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { organization } = useOrganization();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(ThreadValidation),
     defaultValues: {
       thread: '',
       accountId: userId,
+      communityId: 'individual',
     }
   });
   async function onSubmit(values: z.infer<typeof ThreadValidation>) {
-    await createThread({
-      text: values.thread,
-      author: userId,
-      communityId: organization? organization.id : null,
-      path: pathname,
-    });
-
-    router.push('/')
+    setIsSubmitting(true);
+    try {
+      await createThread({
+        text: values.thread,
+        author: userId,
+        communityId: values.communityId === 'individual' ? null : values.communityId,
+        path: pathname,
+      });
+      toast.success('Thread Posted Successfully');
+      router.push('/')
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <Form {...form}> 
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-start gap-10">
-        <ThreadTextArea form={form} name="thread"/>
-        <Button type="submit" className="bg-primary-500">
+        <SelectCommunity form={form} name="communityId" communities={communities}/>
+        <CustomTextArea form={form} name="thread" alt="content" />
+        <Button type="submit" className="bg-primary-500" disabled={isSubmitting}>
           Post Thread
         </Button>
       </form>
@@ -55,14 +73,16 @@ const PostThread = ({ userId }: {userId: string}) => {
 
 export default PostThread
 
-interface ThreadFormFieldProps {
+type ThreadFormFieldProps = {
   form: any;
   name: string;
   defaultValue?: string;
 }
 
 
-export function ThreadTextArea({ form, name, defaultValue } : ThreadFormFieldProps) {
+
+export function SelectCommunity({ form, name, defaultValue, communities } : ThreadFormFieldProps & { communities: communities[] }) {
+
   return (
     <FormField
       control={form.control}
@@ -70,15 +90,25 @@ export function ThreadTextArea({ form, name, defaultValue } : ThreadFormFieldPro
       render={({ field }) => (
         <FormItem className='flex flex-col gap-3 w-full'>
           <FormLabel className='text-base-semibold text-light-2'>
-            Content
+            Type of Thread
           </FormLabel>
           <FormControl>
-            <Textarea
-              rows={15}
-              className='account-form_input no-focus'
-              defaultValue={defaultValue}
-              {...field}
-            />
+            <Select 
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+            >
+              <SelectTrigger className="w-[180px] bg-dark-2 text-light-2 border-none">
+                <SelectValue placeholder="Post Via" />
+              </SelectTrigger>
+              <SelectContent className="bg-dark-2 text-light-2 border-none">
+                <SelectItem value="individual">Individual</SelectItem>
+                {communities.map((community) => (
+                  <SelectItem key={community.id} value={community.cid.toString()}>
+                    {community.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormControl>
           <FormMessage />
         </FormItem>

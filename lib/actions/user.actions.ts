@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import prismadb from "./prismadb";
+import { deleteThread } from "./thread.actions";
+import { getActivityLikedByUser } from "./activity.actions";
+import { deleteCommunity } from "./community.actions";
 
 type UpdateUserProps = {
   userId: string;
@@ -73,23 +76,6 @@ export async function fetchUser(userId: string) {
 
 export async function fetchUserPosts(userId: string) {
   try {
-    // TODO: populate communities
-    // const threads = await User
-    //   .findOne({ id: userId })
-    //   .populate({
-    //     path: 'threads',
-    //     model: Thread,
-    //     populate: {
-    //       path: 'children',
-    //       model: Thread,
-    //       populate: {
-    //         path: 'author',
-    //         model: 'User',
-    //         select: 'id name image'
-    //       }
-    //     }
-    //   }).exec()
-
     const threads = await prismadb.users.findUnique({
       where: {
         uid: userId,
@@ -135,18 +121,6 @@ export async function fetchUsers({
 
     const regex = new RegExp(searchString, "i");
 
-    // const query: FilterQuery<typeof User> = {
-    //   id: { $ne: userId },
-    // }
-
-    // if(searchString.trim() !== '') {
-    //   query.$or = [
-    //     { name: { $regex: regex } },
-    //     { username: { $regex: regex } },
-    //   ]
-    // }
-
-    // in Prisma
     type QueryType = {
       OR: [
         {
@@ -211,5 +185,63 @@ export async function fetchUsers({
     return { users, isNext };
   } catch (error: any) {
     throw new Error(`Failed to fetch users: ${error.message}`);
+  }
+}
+
+export async function deleteUser(uid: string, path: string) {
+  try {
+    const user = await fetchUser(uid);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    // Delete user's threads
+    // TODO: Optimize this with group by get and delete, using skip
+    const userThreads = await prismadb.threads.findMany({
+      where: {
+        authorId: user.id,
+      },
+    });
+    userThreads.forEach(async (thread) => {
+      await deleteThread(thread.id, path);
+    });
+
+    // Delete user's liked threads
+    const userLikedThreads = await getActivityLikedByUser(user.id);
+    userLikedThreads.forEach(async (thread) => {
+      await prismadb.threads.update({
+        where: {
+          id: thread.id,
+        },
+        data: {
+          likedBy: {
+            disconnect: {
+              id: user.id,
+            },
+          },
+        },
+      });
+    });
+
+    // TODO: Delete user created communities if no other moderators
+    const userCreatedCommunities = await prismadb.communities.findMany({
+      where: {
+        createdById: user.id,
+      },
+    });
+
+    userCreatedCommunities.forEach(async (community) => {
+      await deleteCommunity(community.cid, path);
+    });
+
+    // Delete user
+    await prismadb.users.delete({
+      where: {
+        uid,
+      },
+    });
+
+    revalidatePath(path);
+  } catch (error: any) {
+    throw new Error(`Failed to delete user: ${error.message}`);
   }
 }

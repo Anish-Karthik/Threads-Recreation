@@ -1,10 +1,10 @@
 
-import PostThread from "@/components/forms/PostThread";
+import CreateCommunity from "@/components/forms/CreateCommunity";
 import { fetchUser } from "@/lib/actions/user.actions";
 import { currentUser } from "@clerk/nextjs"
 import { redirect } from "next/navigation"
 
-async function CreateThreadPage() {
+async function CreateCommmunityPage() {
   const user = await currentUser()
 
   if (!user) return null;
@@ -14,12 +14,12 @@ async function CreateThreadPage() {
   if(!userInfo?.onboarded) redirect('/onboarding');
 
   return (
-    <div className="flex flex-col gap-8">
-      <h1 className='head-text text-left'>Create Thread</h1>
+    <div className="flex flex-col gap-4 -mt-8">
+      <h1 className='head-text text-left'>Create Community</h1>
 
-      <PostThread userId={userInfo.id} communities={userInfo.communities} />
+      <CreateCommunity userId={userInfo.uid} />
     </div>
   )
 }
 
-export default CreateThreadPage;
+export default CreateCommmunityPage

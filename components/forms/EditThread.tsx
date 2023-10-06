@@ -7,9 +7,12 @@ import { z } from 'zod';
 import { useRouter, usePathname } from 'next/navigation';
 import { EditThreadValidation } from "@/lib/validations/thread";
 import { editThread } from "@/lib/actions/thread.actions";
-import { ThreadTextArea } from "./PostThread";
+import { CustomTextArea } from "../form-fields";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 const EditThread = ({ userId, threadId, text }: { userId: string, threadId: string, text: string }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -21,20 +24,27 @@ const EditThread = ({ userId, threadId, text }: { userId: string, threadId: stri
     }
   });
   async function onSubmit(values: z.infer<typeof EditThreadValidation>) {
-    await editThread({
-      text: values.text,
-      threadId: threadId,
-      path: pathname,
-    });
+    setIsSubmitting(true);
+    try {
+      await editThread({
+        text: values.text,
+        threadId: threadId,
+        path: pathname,
+      });
 
-    router.push(`/thread/${threadId}`)
+      router.push(`/thread/${threadId}`)
+      toast.success('Thread Edited Successfully');
+    } catch (error) {
+      toast.error(error.message);
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <Form {...form}> 
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-start gap-10">
-        <ThreadTextArea form={form} name="text" defaultValue={text}/>
-        <Button type="submit" className="bg-primary-500">
+        <CustomTextArea form={form} name="text" alt="Edit Thread" />
+        <Button type="submit" className="bg-primary-500" disabled={isSubmitting}>
           Edit Thread
         </Button>
       </form>

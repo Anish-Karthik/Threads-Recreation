@@ -1,12 +1,14 @@
-import { fetchCommunityDetails } from '@/lib/actions/community.actions';
+import { fetchCommunityDetailsById } from '@/lib/actions/community.actions';
 import { cn, formatDateString } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react'
-import DeleteThread from '../actions/DeleteThread';
-import { fetchLikeCount, isLikedThread } from '@/lib/actions/thread.actions';
-import LikeThread from '../actions/LikeThread';;
-import ShareThread from '../actions/ShareThread';
+import DeleteThread from '../forms/DeleteEntity';
+import { deleteThread, fetchLikeCount, isLikedThread } from '@/lib/actions/thread.actions';
+import LikeThread from '../thread-actions/LikeThread';;
+import ShareThread from '../thread-actions/ShareThread';
+import DeleteEntity from '../forms/DeleteEntity';
+import { fetchUser } from '@/lib/actions/user.actions';
 
 interface ThreadCardProps {
   key: string;
@@ -45,9 +47,10 @@ const ThreadCard = async ({
 }: 
   ThreadCardProps
 ) => {
-  const communityDetails = await fetchCommunityDetails(community ?? "");
+  const communityDetails = await fetchCommunityDetailsById(community || '');
   const likeCount = await fetchLikeCount(id);
-  const isLiked = currentUserId? await isLikedThread(id, currentUserId): false;
+  const userInfo = await fetchUser(currentUserId);
+  const isLiked = userInfo? await isLikedThread(id, currentUserId): false;
 
   return (
     <article className={cn('flex flex-col w-full rounded-xl', isComment? 'px-0 xs:px-7 py-3': 'bg-dark-2 p-7')}>
@@ -71,14 +74,16 @@ const ThreadCard = async ({
               <Link href={`/profile/${author.uid}`} className='w-fit'>
                 <h4 className='cursor-pointer text-base-semibold text-light-2'>{author.name}</h4>
               </Link>
-              <div className='flex gap-2'>
-                <DeleteThread id={id} author={author.uid} currentUserId={currentUserId} />
-                {currentUserId && currentUserId==author.uid && 
+
+              {currentUserId && currentUserId==author.uid && 
+                <div className='flex gap-2'>
+                  <DeleteEntity id={id} type="Thread" deleteCallback={deleteThread} />
                   <Link href={`/thread/${id}/edit`}>
                     <Image src="/assets/edit.svg" alt='edit' width={24} height={24} className='cursor-pointer object-contain'/>
                   </Link>
-                }
-              </div>
+                </div>
+              }
+              
             </div>
 
             <p className='mt-2 text-small-regular text-light-2'>{content}</p>
@@ -94,7 +99,7 @@ const ThreadCard = async ({
                 
               </div>
               {/* Commented user Profiles */}
-              {(!isComment && comments.length > 0) && (
+              {(comments.length > 0) && (
                 <Link href={`/thread/${id}`} className='flex flex-start gap-4'>
                   <p className='mt-1 text-subtle-medium text-gray-1'>
                     {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
@@ -125,7 +130,8 @@ const ThreadCard = async ({
 
       </div>
       {!isComment && community && communityDetails && (
-        <Link href={`/communities/${communityDetails.cid}`} className='mt-5 flex items-center'>
+        
+        <Link href={`/communities/${communityDetails.cid}`} className='mt-5 flex items-center'> 
           <p className='text-subtle-medium text-gray-1'>{formatDateString(createdAt)} - {communityDetails.name} Community</p>
           <Image 
             src={communityDetails.image}

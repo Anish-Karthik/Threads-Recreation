@@ -30,14 +30,27 @@
   <li>Implemented Like thread</li>
   <li>Implemented Edit thread</li>
   <li>Implemented share</li>
+  <li>Activity Notification for like</li>
   <li>Implemented Edit Profile</li>
+  <li>Use prisma ORM</li>
+  
+  <li>Make community without clerk</li>
+  <h4><b>Community Additional Features without Clerk</b></h4>
+  <ul> 
+    <li>Created Community Card and Community Page and action</li>
+    <li>Server Actions for Community CRUD</li>
+    <li>Delete and Edit Community</li> 
+  </ul>
+  <br>
 </ul>
 
 ## Todo
 <ul>
+  <li>Implement add/remove member</li>
+  <li>Implement add/remove moderator</li>
+  <li>Implement auto assign any moderator as creator if creator leaves or account is deleted</li>
   <li>Implement repost</li>
-  <li>Activity Notification for like</li>
-  <li>Make community without clerk</li>
-  <li>Use prisma ORM</li>
-  <li>Use TRPC/GraphQL instead of REST</li>
+  <li>Implement bookmark</li>
+  <li>Implement follow</li>
+  <li>Implement DM</li>
 </ul>
