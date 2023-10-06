@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import prismadb from "./prismadb";
 import { deleteThread } from "./thread.actions";
 import { getActivityLikedByUser } from "./activity.actions";
-import { deleteCommunity, fetchCommunityDetails } from "./community.actions";
+import {
+  addMemberToCommunity,
+  deleteCommunity,
+  fetchCommunityDetails,
+} from "./community.actions";
 
 type UpdateUserProps = {
   userId: string;
@@ -52,7 +56,6 @@ export async function updateUser({
       revalidatePath(path);
     }
   } catch (error: any) {
-    
     throw new Error(`Failed to create/update user: ${error.message}`);
   }
 }
@@ -279,6 +282,13 @@ export async function requestToJoinCommunity(cid: string, uid: string) {
       throw new Error("User not found");
     }
 
+    if (community.requestsIds.includes(user.id)) {
+      throw new Error("Already requested");
+    }
+    if (community.membersIds.includes(user.id)) {
+      throw new Error("Already a member");
+    }
+
     await prismadb.communities.update({
       where: {
         cid: cid,
@@ -321,11 +331,6 @@ export async function acceptCommunityInvite(cid: string, uid: string) {
             id: user.id,
           },
         },
-        members: {
-          connect: {
-            id: user.id,
-          },
-        },
       },
     });
 
@@ -341,6 +346,8 @@ export async function acceptCommunityInvite(cid: string, uid: string) {
         },
       },
     });
+
+    await addMemberToCommunity(cid, uid);
 
     return { success: true };
   } catch (error) {

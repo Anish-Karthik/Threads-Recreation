@@ -1,4 +1,4 @@
-import React from 'react'
+
 import Image from 'next/image'
 import Link from 'next/link';
 import DeleteEntity from '../forms/DeleteEntity';
@@ -17,6 +17,8 @@ interface ProfileHeaderProps {
   editable?: boolean;
   isMember?: boolean;
   canRequest?: boolean;
+  notJoinedCommunities?: string[];
+  joinMode?: string;
 }
 
 const ProfileHeader = ({
@@ -30,6 +32,8 @@ const ProfileHeader = ({
   editable = false,
   isMember = false,
   canRequest = true,
+  notJoinedCommunities = [],
+  joinMode = 'open'
 }: ProfileHeaderProps) => {
 
   
@@ -62,16 +66,18 @@ const ProfileHeader = ({
         </div>  
           
         <div className='flex gap-2'>
-          {!isMember && canRequest && (type === "Community"? (
+          {!isMember && canRequest && (type === "Community" && joinMode === "approval"? (
             <JoinOrLeave text={"Request"} isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={requestToJoinCommunity} />
-          ): (
-            <JoinOrLeave text={"Invite"} isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={inviteUserToCommunity} />
+          ): (<>{notJoinedCommunities && notJoinedCommunities.length > 0 &&
+            <JoinOrLeave text={"Invite"} notJoinedCommunities={notJoinedCommunities} isMember={isMember} communityId={accountId} memberId={accountId} onActionCallback={inviteUserToCommunity} />}</>
           ))}
 
-          { type === "Community" && (
-            <JoinOrLeave isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={isMember?removeUserFromCommunity: addMemberToCommunity} />
-          )}
-
+          { type === "Community" && (isMember ? (
+            <JoinOrLeave isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={removeUserFromCommunity} />
+          ): joinMode === "open" && (
+            <JoinOrLeave isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={addMemberToCommunity} />
+          ))}
+          
         </div>
         
       </div>

@@ -38,6 +38,7 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
         editable={communityDetails.createdBy.uid === user.id}
         canRequest={!pendingRequest}
         isMember={isMember}
+        joinMode={communityDetails.joinMode}
       />
 
       <div className='mt-9'>

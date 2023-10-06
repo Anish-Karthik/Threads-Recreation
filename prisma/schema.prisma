@@ -24,10 +24,10 @@ model users {
   likedThreads   threads[] @relation("LikedThread", fields: [likedThreadIds], references: [id]) // likedBy
   likedThreadIds String[]  @db.ObjectId
 
-  communities communities[]
+  createdCommunities communities[] //createdBy
 
-  createdCommunities  communities[] @relation("Member", fields: [createdCommunityIds], references: [id])
-  createdCommunityIds String[]      @db.ObjectId
+  communities  communities[] @relation("Member", fields: [communityIds], references: [id]) //member of community
+  communityIds String[]      @db.ObjectId
 
   requestedCommunities  communities[] @relation("Request", fields: [requestedCommunityIds], references: [id]) //request to community
   requestedCommunityIds String[]      @db.ObjectId
@@ -65,11 +65,12 @@ model threads {
 }
 
 model communities {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  cid   String @unique
-  name  String
-  image String
-  bio   String
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  cid      String @unique
+  name     String
+  image    String
+  bio      String
+  joinMode String @default("open")
 
   createdBy   users  @relation(fields: [createdById], references: [id])
   createdById String @db.ObjectId

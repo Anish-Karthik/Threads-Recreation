@@ -18,6 +18,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useRouter, usePathname } from 'next/navigation';
 import { createCommunity, updateCommunityInfo } from '@/lib/actions/community.actions';
 import { Input } from '../ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image';
@@ -44,6 +51,7 @@ const CreateCommunity = ({ userId, communityDetails }: { userId: string, communi
       cid: communityDetails?.cid || '',
       bio: communityDetails?.bio || '',
       image: communityDetails?.image || '/assets/org.png',
+      joinMode: communityDetails?.joinMode || 'open',
     }
   });
   if(!userId) return null;
@@ -87,6 +95,7 @@ const CreateCommunity = ({ userId, communityDetails }: { userId: string, communi
           name: values.name,
           image: values.image,
           bio: values.bio,
+          joinMode: values.joinMode,
         });
         router.push(`/communities/${updatedCommunity.cid}`);
         toast.success('Community Updated Successfully');
@@ -97,6 +106,7 @@ const CreateCommunity = ({ userId, communityDetails }: { userId: string, communi
           image: values.image,
           bio: values.bio,
           createdById: userId,
+          joinMode: values.joinMode,
         });
         router.push(`/communities/${newCommunity.cid}`);
         toast.success('Community Created Successfully');
@@ -112,6 +122,7 @@ const CreateCommunity = ({ userId, communityDetails }: { userId: string, communi
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-start gap-10">
         <CustomProfilePhoto form={form} handleImageChange={handleImageChange} name='image' alt='Community Logo' />
+        <SelectJoinMode form={form} name={"joinMode"} />
         <CustomInputField form={form} name='name' alt="Community Name" />
         <CustomInputField form={form} name='cid' alt="Unique cid" />
         <CustomTextArea form={form} name='bio' />
@@ -123,3 +134,37 @@ const CreateCommunity = ({ userId, communityDetails }: { userId: string, communi
 }
 
 export default CreateCommunity
+
+
+export function SelectJoinMode({ form, name } :  { form: any; name: string; }) {
+
+  return (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className='flex flex-col gap-3 w-full'>
+          <FormLabel className='text-base-semibold text-light-2'>
+            Join Mode
+          </FormLabel>
+          <FormControl>
+            <Select 
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+            >
+              <SelectTrigger className="w-[180px] bg-dark-2 text-light-2 border-none">
+                <SelectValue placeholder="Join Mode" />
+              </SelectTrigger>
+              <SelectContent className="bg-dark-2 text-light-2 border-none">
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="approval">Approval</SelectItem>
+                {/* <SelectItem value="closed">Closed</SelectItem> */}
+              </SelectContent>
+            </Select>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}

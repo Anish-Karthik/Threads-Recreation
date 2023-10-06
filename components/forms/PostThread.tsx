@@ -81,7 +81,7 @@ type ThreadFormFieldProps = {
 
 
 
-export function SelectCommunity({ form, name, defaultValue, communities } : ThreadFormFieldProps & { communities: communities[] }) {
+export function SelectCommunity({ form, name, defaultValue, communities } : ThreadFormFieldProps & { communities: communities[] | string[] }) {
 
   return (
     <FormField
@@ -101,10 +101,10 @@ export function SelectCommunity({ form, name, defaultValue, communities } : Thre
                 <SelectValue placeholder="Post Via" />
               </SelectTrigger>
               <SelectContent className="bg-dark-2 text-light-2 border-none">
-                <SelectItem value="individual">Individual</SelectItem>
-                {communities.map((community) => (
-                  <SelectItem key={community.id} value={community.cid.toString()}>
-                    {community.name}
+                {communities[0] && communities[0]['id'] && <SelectItem value="individual">Individual</SelectItem>}
+                {communities.map((community, ind) => (
+                  <SelectItem key={ind} value={community?.cid?.toString() || community}>
+                    {community?.name || community}
                   </SelectItem>
                 ))}
               </SelectContent>

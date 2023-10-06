@@ -28,12 +28,14 @@ export async function createCommunity({
   image,
   bio,
   createdById,
+  joinMode,
 }: {
   name: string;
   cid: string;
   image: string;
   bio: string;
   createdById: string;
+  joinMode: string;
 }) {
   try {
     // Find the user with the provided unique id
@@ -52,8 +54,14 @@ export async function createCommunity({
         cid,
         image,
         bio,
+        joinMode,
         createdById: user.id,
         members: {
+          connect: {
+            id: user.id,
+          },
+        },
+        moderators: {
           connect: {
             id: user.id,
           },
@@ -68,6 +76,16 @@ export async function createCommunity({
       },
       data: {
         communities: {
+          connect: {
+            cid: newCommunity.cid,
+          },
+        },
+        createdCommunities: {
+          connect: {
+            cid: newCommunity.cid,
+          },
+        },
+        moderatedCommunities: {
           connect: {
             cid: newCommunity.cid,
           },
@@ -120,6 +138,9 @@ export async function fetchCommunityDetailsById(id: string | null) {
         createdBy: true,
         members: true,
         threads: true,
+        moderators: true,
+        requests: true,
+        invites: true,
       },
     });
 
@@ -273,7 +294,7 @@ export async function addMemberToCommunity(
       throw new Error("User is already a member of the community");
     }
 
-    // Add the user's _id to the members array in the community
+    // Add the user's id to the members array in the community
     await prismadb.communities.update({
       where: {
         cid: communityId,
@@ -286,6 +307,20 @@ export async function addMemberToCommunity(
         },
       },
     });
+
+    // Add the community's id to the communities array in the user
+    await prismadb.users.update({
+      where: {
+        uid: memberId,
+      },
+      data: {
+        communities: {
+          connect: {
+            id: community.id,
+          },
+        },
+      },
+    });
     return community;
   } catch (error) {
     // Handle any errors
@@ -294,34 +329,64 @@ export async function addMemberToCommunity(
   }
 }
 
-export async function removeUserFromCommunity(
-  communityId: string,
-  userId: string
-) {
+export async function removeUserFromCommunity(cid: string, uid: string) {
   try {
-    const userIdObject = (await fetchUser(userId))?.id;
-    const communityIdObject = (await fetchCommunityDetails(communityId))?.id;
+    const user = await fetchUser(uid);
+    const community = await fetchCommunityDetails(cid);
 
-    if (!userIdObject) {
+    if (!user) {
       throw new Error("User not found");
     }
 
-    if (!communityIdObject) {
+    if (!community) {
       throw new Error("Community not found");
     }
 
     await prismadb.communities.update({
       where: {
-        cid: communityId,
+        cid: cid,
       },
       data: {
         members: {
           disconnect: {
-            id: userIdObject,
+            id: user.id,
+          },
+        },
+        moderators: {
+          disconnect: {
+            id: user.id,
           },
         },
       },
     });
+
+    await prismadb.users.update({
+      where: {
+        uid: uid,
+      },
+      data: {
+        communities: {
+          disconnect: {
+            id: community.id,
+          },
+        },
+        moderatedCommunities: {
+          disconnect: {
+            id: community.id,
+          },
+        },
+        createdCommunities: {
+          disconnect: {
+            id: community.id,
+          },
+        },
+      },
+    });
+
+    if ((community.createdById === user.id && community.membersIds.length > 0) || community.membersIds.length === 0) {
+      await deleteCommunity(cid, "/communities/" + cid);
+    }
+
 
     return { success: true };
   } catch (error) {
@@ -336,11 +401,13 @@ export async function updateCommunityInfo({
   cid,
   image,
   bio,
+  joinMode,
 }: {
   name: string;
   cid: string;
   image: string;
   bio: string;
+  joinMode: string;
 }) {
   try {
     const updatedCommunity = await prismadb.communities.update({
@@ -351,6 +418,7 @@ export async function updateCommunityInfo({
         name,
         image,
         bio,
+        joinMode,
       },
     });
 
@@ -387,12 +455,19 @@ export async function deleteCommunity(cid: string, path: string) {
       await deleteThread(thread.id, path);
     });
 
+    // Delete the community from the user's communities array
+    community.members.forEach(async (member) => {
+      await removeUserFromCommunity(cid, member.uid);
+    });
+
     // Delete the community
     const deletedCommunity = await prismadb.communities.delete({
       where: {
         cid: cid,
       },
     });
+
+    
 
     revalidatePath("/");
     return deletedCommunity;
@@ -410,7 +485,6 @@ export async function isCommunityMember(cid: string, id: string) {
       throw new Error("Community not found");
     }
 
-
     return !!communities.membersIds.includes(id);
   } catch (error) {}
 }
@@ -425,6 +499,10 @@ export async function inviteUserToCommunity(cid: string, uid: string) {
     if (!user) {
       throw new Error("User not found");
     }
+    if (community.invitesIds.includes(user.id))
+      throw new Error("User already invited");
+    if (community.membersIds.includes(user.id))
+      throw new Error("User already member");
 
     await prismadb.communities.update({
       where: {
@@ -469,6 +547,12 @@ export async function acceptUserRequest(cid: string, uid: string) {
     if (!user) {
       throw new Error("User not found");
     }
+    if (!community.requestsIds.includes(user.id)) {
+      throw new Error("User not requested");
+    }
+    if (community.membersIds.includes(user.id)) {
+      throw new Error("User already member");
+    }
 
     // update community
     await prismadb.communities.update({
@@ -478,11 +562,6 @@ export async function acceptUserRequest(cid: string, uid: string) {
       data: {
         requests: {
           disconnect: {
-            id: user.id,
-          },
-        },
-        members: {
-          connect: {
             id: user.id,
           },
         },
@@ -500,8 +579,59 @@ export async function acceptUserRequest(cid: string, uid: string) {
             id: community.id,
           },
         },
-        communities: {
-          connect: {
+      },
+    });
+
+    await addMemberToCommunity(cid, uid);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error accepting community request: ", error);
+    throw error;
+  }
+}
+
+// reject user request
+export async function rejectUserRequest(cid: string, uid: string) {
+  try {
+    const user = await fetchUser(uid);
+    const community = await fetchCommunityDetails(cid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (!community.requestsIds.includes(user.id)) {
+      throw new Error("User not requested");
+    }
+    if (community.membersIds.includes(user.id)) {
+      throw new Error("User already member");
+    }
+
+    // update community
+    await prismadb.communities.update({
+      where: {
+        cid: cid,
+      },
+      data: {
+        requests: {
+          disconnect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    // update user
+    await prismadb.users.update({
+      where: {
+        uid: uid,
+      },
+      data: {
+        requestedCommunities: {
+          disconnect: {
             id: community.id,
           },
         },
@@ -510,7 +640,7 @@ export async function acceptUserRequest(cid: string, uid: string) {
 
     return { success: true };
   } catch (error) {
-    console.error("Error accepting community request: ", error);
+    console.error("Error rejecting community join request: ", error);
     throw error;
   }
 }
@@ -567,6 +697,93 @@ export async function isPendingRequest(cid: string, uid: string) {
     return community.requestsIds.includes(user.id);
   } catch (error) {
     console.error("Error checking if user is moderator: ", error);
+    throw error;
+  }
+}
+
+export async function fetchModerators(cid: string) {
+  try {
+    const community = await fetchCommunityDetails(cid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+
+    return community.moderators;
+  } catch (error) {
+    console.error("Error fetching moderators: ", error);
+    throw error;
+  }
+}
+
+// add moderator
+export async function addModerator(cid: string, uid: string) {
+  try {
+    const user = await fetchUser(uid);
+    const community = await fetchCommunityDetails(cid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (community.moderatorsIds.includes(user.id)) {
+      throw new Error("User already moderator");
+    }
+
+    await prismadb.communities.update({
+      where: {
+        cid: cid,
+      },
+      data: {
+        moderators: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error adding moderator: ", error);
+    throw error;
+  }
+}
+
+// remove moderator
+export async function removeModerator(cid: string, uid: string) {
+  try {
+    const user = await fetchUser(uid);
+    const community = await fetchCommunityDetails(cid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (!community.moderatorsIds.includes(user.id)) {
+      throw new Error("User not moderator");
+    }
+
+    await prismadb.communities.update({
+      where: {
+        cid: cid,
+      },
+      data: {
+        moderators: {
+          disconnect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing moderator: ", error);
     throw error;
   }
 }

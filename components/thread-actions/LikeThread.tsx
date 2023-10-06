@@ -24,7 +24,6 @@ const LikeThread = ({isLiked, threadId, userId, likeCount = 0 , path}: LikeThrea
   const toggleHeart = async () => {
     if(!user || !user.userId) return router.push('/sign-in');
     try {
-      setLiked((prev) => !prev);
       const result = await toggleLikeThread(threadId, userId, path);
       if(!result) {
         toast.error('Something went wrong');

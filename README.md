@@ -16,7 +16,7 @@
   <li>Added Comment/Reply to Thread</li>
   <li>Created Profile Card and Profile Page</li>
   <li>Added Activity Page for replies</li>
-  <h4><b>Community Additional Features</b></h4>
+  <h4><b>Community Additional Features (Using Clerk Organizations)</b></h4>
   <ul> 
     <li>Added Clerk Organizations and webhooks</li>
     <li>Server Actions for Community CRUD</li>
@@ -35,12 +35,15 @@
   <li>Use prisma ORM</li>
   
   <li>Make community without clerk</li>
-  <h4><b>Community Additional Features without Clerk</b></h4>
+  <h4><b>Community Additional Features (without Clerk)</b></h4>
   <ul> 
     <li>Created Community Card and Community Page and action</li>
     <li>Server Actions for Community CRUD</li>
     <li>Delete and Edit Community</li> 
-    <li>Implement add/remove member</li>
+    <li>Implemented add/remove member</li>
+    <li>Implemented user request to join community</li>
+    <li>Implemented community invite to user</li>
+    <li>Implemented joinType for community</li>
   </ul>
   <br>
 </ul>
