@@ -28,7 +28,6 @@ export default function DeleteEntity({ id, type, deleteCallback }: { id: string,
       toast.success(`${type} Deleted Successfully`);
       if(type === "User") {
         router.push('/sign-up');
-        // TODO: logout user
         signOut();
       } else{
         router.push('/');

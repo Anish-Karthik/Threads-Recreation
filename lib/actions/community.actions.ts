@@ -280,25 +280,11 @@ export async function addMemberToCommunity(
       data: {
         members: {
           connect: {
-            id: memberId,
+            id: user.id,
           },
         },
       },
     });
-    // Add the community's _id to the communities array in the user
-    await prismadb.users.update({
-      where: {
-        id: memberId,
-      },
-      data: {
-        communities: {
-          connect: {
-            cid: communityId,
-          },
-        },
-      },
-    });
-
     return community;
   } catch (error) {
     // Handle any errors
@@ -308,8 +294,8 @@ export async function addMemberToCommunity(
 }
 
 export async function removeUserFromCommunity(
-  userId: string,
-  communityId: string
+  communityId: string,
+  userId: string
 ) {
   try {
     const userIdObject = (await fetchUser(userId))?.id;
@@ -330,24 +316,12 @@ export async function removeUserFromCommunity(
       data: {
         members: {
           disconnect: {
-            id: userId,
+            id: userIdObject,
           },
         },
       },
     });
 
-    await prismadb.users.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        communities: {
-          disconnect: {
-            cid: communityId,
-          },
-        },
-      },
-    });
 
     return { success: true };
   } catch (error) {
@@ -421,10 +395,44 @@ export async function deleteCommunity(communityId: string, path: string) {
       },
     });
 
-    revalidatePath('/');
+    revalidatePath("/");
     return deletedCommunity;
   } catch (error) {
     console.error("Error deleting community: ", error);
     throw error;
   }
 }
+
+export async function isCommunityMember(communityId: string, id: string) {
+  try {
+    const communities = await fetchCommunityDetails(communityId);
+
+    if (!communities) {
+      throw new Error("Community not found");
+    }
+    console.log("communities", communities.membersIds, id);
+
+    return !!communities.membersIds.includes(id);
+  } catch (error) {}
+}
+
+// export async function inviteUserToCommunity(communityId: string, id: string) {
+//   try {
+//     const community = await fetchCommunityDetails(communityId);
+    
+//     await prismadb.communities.update({
+//       where: {
+//         cid: communityId,
+//       },
+//       data: {
+//         invited: {
+//           connect: {
+//             id: id,
+//           },
+//         },
+//       },
+//     });
+//   } catch (error) {
+    
+//   }
+// }

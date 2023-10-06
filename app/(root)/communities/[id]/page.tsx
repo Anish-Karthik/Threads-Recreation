@@ -3,7 +3,7 @@ import ProfileHeader from '@/components/shared/ProfileHeader';
 import ThreadsTab from '@/components/shared/ThreadsTab';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { communityTabs } from '@/constants';
-import { fetchCommunityDetails } from '@/lib/actions/community.actions';
+import { fetchCommunityDetails, isCommunityMember } from '@/lib/actions/community.actions';
 import { fetchUser } from '@/lib/actions/user.actions';
 import { currentUser } from '@clerk/nextjs'
 import Image from 'next/image';
@@ -14,7 +14,9 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
   const user = await currentUser()
   if(!user)  return null;
   const userInfo = await fetchUser(user.id);
+  if(!userInfo) return redirect('/');
   if(!userInfo?.onboarded) redirect('/onboarding');
+  const isMember = await isCommunityMember(params.id, userInfo.id);
 
 
   const communityDetails = await fetchCommunityDetails(params.id);
@@ -31,6 +33,7 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
         bio={communityDetails.bio}
         type='Community'
         editable={communityDetails.createdBy.uid === user.id}
+        isMember={isMember}
       />
 
       <div className='mt-9'>
