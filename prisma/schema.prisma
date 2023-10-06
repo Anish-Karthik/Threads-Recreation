@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  uid       String  @unique
+  username  String  @unique
+  name      String
+  image     String
+  bio       String
+  onboarded Boolean @default(false)
+
+  threads threads[] // author
+
+  likedThreads   threads[] @relation("LikedThread", fields: [likedThreadIds], references: [id]) // likedBy
+  likedThreadIds String[]  @db.ObjectId
+
+  communities         communities[]
+  createdCommunities  communities[] @relation("Member", fields: [createdCommunityIds], references: [id])
+  createdCommunityIds String[]      @db.ObjectId
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @default(now())
+}
+
+model threads {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  text String
+
+  author   users  @relation(fields: [authorId], references: [id]) //thread
+  authorId String @db.ObjectId
+
+  community   communities? @relation(fields: [communityId], references: [id]) //threads user
+  communityId String?      @db.ObjectId
+
+  likedBy    users[]  @relation("LikedThread", fields: [likedByIds], references: [id])
+  likedByIds String[] @db.ObjectId
+
+  children threads[] @relation("Comment")
+  parent   threads?  @relation("Comment", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId String?   @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model communities {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  cid      String @unique
+  username String @unique
+  name     String
+  image    String
+  bio      String
+
+  createdBy   users  @relation(fields: [createdById], references: [id])
+  createdById String @db.ObjectId
+
+  threads threads[] //community
+
+  members    users[]  @relation("Member", fields: [membersIds], references: [id]) //community
+  membersIds String[] @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}

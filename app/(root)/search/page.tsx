@@ -20,8 +20,8 @@ const SearchPage = async ({
   // Fetch users
   const result = await fetchUsers({
     userId: user?.id || '',
-    searchString: searchParams?.q || '',
-    pageNumber: searchParams?.page ? +searchParams.page : 1,
+    searchString: searchParams.q || '',
+    pageNumber: searchParams.page ? +searchParams.page : 1,
     pageSize: 5,
   });
 
@@ -39,8 +39,8 @@ const SearchPage = async ({
           <>
             {result.users.map((person) => (
               <UserCard 
-                key={person.id} 
-                id={person.id}
+                key={person.uid} 
+                id={person.uid}
                 name={person.name}
                 username={person.username}
                 imgUrl={person.image} 

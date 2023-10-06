@@ -15,12 +15,12 @@ function LeftSidebar() {
   return (
     <section className='custom-scrollbar leftsidebar'>
       <div className='flex flex-col gap-6 px-6 w-full flex-1'>
-        {sidebarLinks.map((link) => {
+        {sidebarLinks.map((link, ind) => {
           const isActive = pathname === link.route;
 
           if(link.route === '/profile') link.route = `/profile/${userId}`
           
-          return <div>
+          return <div key={ind}>
             <Link href={link.route}
               key={link.label}
               className={`leftsidebar_link ${isActive && 'bg-primary-500'}`}

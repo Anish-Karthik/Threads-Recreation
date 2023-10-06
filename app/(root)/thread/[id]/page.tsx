@@ -17,20 +17,21 @@ const ThreadDetailsPage = async ({ params }: { params: { id : string }}) => {
   if(!userInfo?.onboarded) redirect('/onboarding');
 
   const thread = await fetchThreadById(id);
+  if(!thread) return null;
 
   return (
     <section className='relative'>
       <div>
         <ThreadCard 
-          key={thread._id}
-          id={thread._id}
-          currentUserId={user?.id || ''}
+          key={thread.id}
+          id={thread.id}
+          currentUserId={user.id}
           parentId={thread.parentId}
           comments={thread.children}
           content={thread.text}
           author={thread.author}
-          community={thread.community}
-          createdAt={thread.createdAt}
+          community={thread.communityId}
+          createdAt={thread.createdAt.toDateString()}
         />
       </div>
 
@@ -38,22 +39,22 @@ const ThreadDetailsPage = async ({ params }: { params: { id : string }}) => {
         <Comment 
           threadId={thread.id}
           currentUserImg={userInfo.image}
-          currentUserId={JSON.stringify(userInfo._id)} 
+          currentUserId={JSON.stringify(userInfo.id)} 
         />
       </div>
 
       <div className='mt-7'>
-        {thread.children.map((comment : any) => (
+        {thread.children.map((comment) => (
         <ThreadCard 
-          key={comment._id}
-          id={comment._id}
-          currentUserId={user?.id || ''}
+          key={comment.id}
+          id={comment.id}
+          currentUserId={user.id}
           parentId={comment.parentId}
           comments={comment.children}
           content={comment.text}
           author={comment.author}
-          community={comment.community}
-          createdAt={comment.createdAt}
+          community={comment.communityId}
+          createdAt={comment.createdAt.toDateString()}
           isComment={true}
         />
         ))}

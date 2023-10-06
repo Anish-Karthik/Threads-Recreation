@@ -1,11 +1,8 @@
-"use server"
+"use server";
 
-import Thread from "@/lib/models/thread.model";
-import { connectToDB } from "@/lib/mongoose";
-import User from "@/lib/models/user.model";
 import { revalidatePath } from "next/cache";
-import Community from "@/lib/models/community.model";
 import { fetchUser } from "./user.actions";
+import prismadb from "./prismadb";
 
 interface ThreadProps {
   text: string;
@@ -20,118 +17,178 @@ interface addCommentToThreadProps {
   path: string;
 }
 
-
-export async function createThread({ text, author, communityId, path}: ThreadProps) {
+export async function createThread({
+  text,
+  author,
+  communityId,
+  path,
+}: ThreadProps) {
   try {
-    connectToDB();
-
-    const communityIdObject = await Community.findOne(
-      { id: communityId },
-      { _id: 1 }
-    );
-
-    const createdThread = await Thread.create({
-      text,
-      author,
-      community: communityIdObject._id ?? null, // Assign communityId if provided, or leave it null for personal account
-    });
-    if(!author) {
-      console.log("No author provided");
+    if (!author) {
       throw new Error("No author provided");
     }
-    if(!createdThread) {
+    const communityIdObject = await prismadb.communities.findUnique({
+      where: {
+        cid: communityId || "",
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const createdThread = await prismadb.threads.create({
+      data: {
+        text,
+        authorId: author,
+        communityId: communityIdObject?.id || null,
+        parentId: undefined,
+      },
+    });
+
+    if (!createdThread) {
       console.log("Failed to create thread");
       throw new Error("Failed to create thread");
     }
 
-    // Update User model
-    await User.findByIdAndUpdate(author, {
-      $push: { threads: createdThread._id },
+    const user = await prismadb.users.findUnique({
+      where: {
+        id: author,
+      },
+      include: {
+        threads: true,
+      },
+    });
+    if (!user) {
+      console.log("User not found");
+      throw new Error("User not found");
+    }
+
+    await prismadb.users.update({
+      where: {
+        id: author,
+      },
+      data: {
+        threads: {
+          connect: {
+            id: createdThread.id,
+          },
+        },
+      },
     });
 
     if (communityIdObject) {
-      // Update Community model
-      await Community.findByIdAndUpdate(communityIdObject, {
-        $push: { threads: createdThread._id },
+      await prismadb.communities.update({
+        where: {
+          cid: communityIdObject.id,
+        },
+        data: {
+          threads: {
+            connect: {
+              id: createdThread.id,
+            },
+          },
+        },
       });
     }
     // make sure channges are reflected in the cache immediately
     revalidatePath(path);
   } catch (error: any) {
-    throw new Error(`Failed to fetch thread: ${error.message}`)
+    throw new Error(`Failed to fetch thread: ${error.message}`);
   }
 }
 
 export async function fetchThreads(pageNumber = 1, pageSize = 20) {
   try {
-    connectToDB();
     //  calc skips
     const skipAmount = (pageNumber - 1) * pageSize;
 
-    // top level threads
-    const threadsQuery = await Thread.find({parentId: { $in: [null, undefined] }})
-      .sort({ createdAt: "desc" })
-      .skip(skipAmount)
-      .limit(pageSize)
-      .populate({path: "author", model: "User"})
-      .populate({
-        path: "children",
-        populate: {
-          path: "author",
-          model: "User",
-          select: "_id name parentId image",
+    const threadsQuery = await prismadb.threads.findMany({
+      where: {
+        parentId: undefined,
+      },
+      include: {
+        author: true,
+        children: {
+          include: {
+            author: true,
+          },
         },
-      })
-      .exec();
-    const posts = threadsQuery;
-    
-    const totalThreadsCount = await Thread.countDocuments({parentId: { $in: [null, undefined] }});
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: skipAmount,
+      take: pageSize,
+    });
 
+    const posts = threadsQuery;
+
+    const totalThreadsCount = await prismadb.threads.count({
+      where: {
+        parentId: undefined,
+      },
+    });
 
     const isNext = totalThreadsCount > skipAmount + posts.length;
 
-    return {posts, isNext};
-
-  } catch (error) {
-    
-  }
+    return { posts, isNext };
+  } catch (error) {}
 }
 
 export async function fetchThreadById(id: string) {
   try {
-    connectToDB();
-
     // TODO: populate Commmunity
-    const thread = await Thread.findById(id)
-      .populate({
-        path: "author",
-        model: "User", 
-        select: "_id id name image"
-      })
-      .populate({
-        path: "children",
-        populate: [
-          {
-            path: "author",
-            model: "User",
-            select: "_id id name parentId image"
+    // const thread = await Thread.findById(id)
+    //   .populate({
+    //     path: "author",
+    //     model: "User",
+    //     select: "_id id name image"
+    //   })
+    //   .populate({
+    //     path: "children",
+    //     populate: [
+    //       {
+    //         path: "author",
+    //         model: "User",
+    //         select: "_id id name parentId image"
+    //       },
+    //       {
+    //         path: "children",
+    //         model: "Thread",
+    //         populate: {
+    //           path: "author",
+    //           model: "User",
+    //           select: "_id id name parentId image"
+    //         }
+    //       }
+    //     ]
+    //   }).exec();
+    const thread = await prismadb.threads.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        author: true,
+        children: {
+          include: {
+            author: true,
+            community: true,
+            children: {
+              include: {
+                author: true,
+              },
+            },
           },
-          {
-            path: "children",
-            model: "Thread",
-            populate: {
-              path: "author",
-              model: "User",
-              select: "_id id name parentId image"
-            }
-          }
-        ]
-      }).exec();
+        },
+        community: true,
+        likedBy: true,
+      },
+    });
 
     return thread;
   } catch (error: any) {
     console.log(error);
-    throw new Error(`Failed to fetch thread: ${error.message}`)
+    throw new Error(`Failed to fetch thread: ${error.message}`);
   }
 }
 
@@ -142,203 +199,339 @@ export async function addCommentToThread({
   path,
 }: addCommentToThreadProps) {
   try {
-    connectToDB();
-
-    const originalThread = await Thread.findById(threadId);
-
-    if(!originalThread) {
-      throw new Error("Thread not found");
-    }
-    
-    // create a new thread with the comment text
-    const newComment = await Thread.create({
-      text: commentText,
-      author: userId,
-      parentId: threadId,
+    const originalThread = await prismadb.threads.findUnique({
+      where: {
+        id: threadId,
+      },
+      include: {
+        children: true,
+      },
     });
 
-    const savedCommentThread = await newComment.save();
+    if (!originalThread) {
+      throw new Error("Thread not found");
+    }
+    const newComment = await prismadb.threads.create({
+      data: {
+        text: commentText,
+        authorId: userId,
+        parentId: threadId,
+      },
+    });
 
     // add the new thread to the original thread's children
-    originalThread.children.push(savedCommentThread._id);
+    originalThread.children.push(newComment);
 
-    await originalThread.save();
+    // Update Thread model in prisma
+
+    await prismadb.threads.update({
+      where: {
+        id: threadId,
+      },
+      data: {
+        children: {
+          connect: {
+            id: newComment.id,
+          },
+        },
+      },
+    });
 
     revalidatePath(path);
   } catch (error: any) {
-    throw new Error(`Failed to fetch thread: ${error.message}`)
+    throw new Error(`Failed to fetch thread: ${error.message}`);
   }
-
 }
 
 export async function deleteThread(threadId: string, path: string) {
   try {
-    connectToDB();
+    const thread = await prismadb.threads.findUnique({
+      where: {
+        id: threadId,
+      },
+      include: {
+        children: true,
+      },
+    });
 
-    const thread = await Thread.findById(threadId);
-
-    if(!thread) {
+    if (!thread) {
       throw new Error("Thread not found");
     }
-    const usedId = thread.author;
+    const userId = thread.authorId;
     // remove all the thread's children recursively
+    // const deleteChildren = async (threadId: string) => {
+    //   const thread = await Thread.findById(threadId);
+    //   if(!thread) {
+    //     throw new Error("Thread not found");
+    //   }
+    //   if (thread.children.length > 0) {
+    //     for (const child of thread.children) {
+    //       await deleteChildren(child);
+    //     }
+    //   }
+    //   await Thread.findByIdAndDelete(threadId);
+    // };
+
     const deleteChildren = async (threadId: string) => {
-      const thread = await Thread.findById(threadId);
-      if(!thread) {
+      const thread = await prismadb.threads.findUnique({
+        where: {
+          id: threadId,
+        },
+        include: {
+          children: true,
+        },
+      });
+
+      if (!thread) {
         throw new Error("Thread not found");
       }
       if (thread.children.length > 0) {
         for (const child of thread.children) {
-          await deleteChildren(child);
+          await deleteChildren(child.id);
         }
       }
-      await Thread.findByIdAndDelete(threadId);
+      await prismadb.threads.delete({
+        where: {
+          id: threadId,
+        },
+      });
+
+      await prismadb.users.update({
+        where: {
+          uid: userId,
+        },
+        data: {
+          threads: {
+            disconnect: {
+              id: threadId,
+            },
+          },
+        },
+      });
+
+      await prismadb.users.update({
+        where: {
+          uid: userId,
+        },
+        data: {
+          likedThreads: {
+            disconnect: {
+              id: threadId,
+            },
+          },
+        },
+      });
+
+      const communityId = thread.communityId;
+      if (communityId) {
+        await prismadb.communities.update({
+          where: {
+            id: communityId,
+          },
+          data: {
+            threads: {
+              disconnect: {
+                id: threadId,
+              },
+            },
+          },
+        });
+      }
     };
 
     await deleteChildren(threadId);
-    
-    // remove the thread from the community's threads
-    await Community.findOneAndUpdate(
-      { threads: threadId },
-      {
-        $pull: { threads: threadId },
-      }
-    );
-    await Thread.findByIdAndDelete(threadId);
-
-    // remove the thread from the user's threads
-    await User.findByIdAndUpdate(usedId, {
-      $pull: { threads: threadId },
-    });
-
     revalidatePath(path);
   } catch (error: any) {
-    throw new Error(`Failed to fetch thread: ${error.message}`)
+    throw new Error(`Failed to fetch thread: ${error.message}`);
   }
 }
 
-export async function editThread({ threadId, text, path }:{ threadId: string, text: string, path: string }) {
+export async function editThread({
+  threadId,
+  text,
+  path,
+}: {
+  threadId: string;
+  text: string;
+  path: string;
+}) {
   try {
-    connectToDB();
-
-    const thread = await Thread.findByIdAndUpdate(threadId, {
-      text,
+    const thread = await prismadb.threads.update({
+      where: {
+        id: threadId,
+      },
+      data: {
+        text,
+      },
     });
 
-    if(!thread) {
+    if (!thread) {
       throw new Error("Thread not found");
     }
 
     revalidatePath(path);
   } catch (error: any) {
-    throw new Error(`Failed to fetch thread: ${error.message}`)
+    throw new Error(`Failed to fetch thread: ${error.message}`);
   }
 }
 
 export async function fetchLikedThreads(userId: string) {
   try {
-    connectToDB();
+    const user = await fetchUser(userId);
 
-    const user = await User.findById(userId);
-
-    if(!user) {
+    if (!user) {
       throw new Error("User not found");
     }
 
-    const likedThreads = await Thread.find({
-      _id: { $in: user.likedThreads },
-    })
-      .populate({
-        path: "author",
-        model: "User",
-        select: "_id id name parentId image",
-      })
-      .populate({
-        path: "children",
-        populate: {
-          path: "author",
-          model: "User",
-          select: "_id id name parentId image",
+    // const likedThreads = await Thread.find({
+    //   _id: { $in: user.likedThreads },
+    // })
+    //   .populate({
+    //     path: "author",
+    //     model: "User",
+    //     select: "_id id name parentId image",
+    //   })
+    //   .populate({
+    //     path: "children",
+    //     populate: {
+    //       path: "author",
+    //       model: "User",
+    //       select: "_id id name parentId image",
+    //     },
+    //   })
+    //   .exec();
+    const likedThreads = await prismadb.threads.findMany({
+      where: {
+        id: {
+          in: user.likedThreads.map((thread) => thread.id),
         },
-      })
-      .exec();
+      },
+      include: {
+        children: {
+          include: {
+            author: true,
+          },
+        },
+        author: true,
+      },
+    });
 
     return likedThreads;
   } catch (error: any) {
-    throw new Error(`Failed to fetch thread: ${error.message}`)
+    throw new Error(`Failed to fetch thread: ${error.message}`);
   }
 }
 
-export async function toggleLikeThread(threadId: string, userId: string, path: string) {
+export async function toggleLikeThread(
+  threadId: string,
+  userId: string,
+  path: string
+) {
   try {
-    connectToDB();
-
-    const thread = await Thread.findById(threadId);
+    const thread = await fetchThreadById(threadId);
     // await User.updateMany({}, {$set: {likedThreads: []}})
     // await Thread.updateMany({}, {$set: {likes: []}})
 
-    if(!thread) {
+    if (!thread) {
       throw new Error("Thread not found");
     }
     // add the thread to the user's likedThreads
     const user = await fetchUser(userId);
 
-    if(!user) {
+    if (!user) {
       throw new Error("User not found");
     }
     let isLiked = false;
-    if (user.likedThreads.includes(threadId)) {
-      user.likedThreads.pull(threadId);
-      thread.likes.pull(user._id);
+    if (user.likedThreads.map((thread) => thread.id).includes(threadId)) {
+      await prismadb.users.update({
+        where: {
+          uid: userId,
+        },
+        data: {
+          likedThreads: {
+            disconnect: {
+              id: threadId,
+            },
+          },
+        },
+      });
+      await prismadb.threads.update({
+        where: {
+          id: threadId,
+        },
+        data: {
+          likedBy: {
+            disconnect: {
+              id: user.id,
+            },
+          },
+        },
+      });
       isLiked = false;
     } else {
-      user.likedThreads.push(threadId);
-      thread.likes.push(user._id);
+      await prismadb.users.update({
+        where: {
+          uid: userId,
+        },
+        data: {
+          likedThreads: {
+            connect: {
+              id: threadId,
+            },
+          },
+        },
+      });
+      await prismadb.threads.update({
+        where: {
+          id: threadId,
+        },
+        data: {
+          likedBy: {
+            connect: {
+              id: user.id,
+            },
+          },
+        },
+      });
       isLiked = true;
     }
-
-    await thread.save();
-    await user.save();
     revalidatePath(path);
-    return {isLiked, likes: thread.likes.length};
+    return { isLiked, likes: thread.likedByIds.length };
   } catch (error: any) {
-    console.error(`Failed to fetch thread: ${error.message}`)
+    console.error(`Failed to fetch thread: ${error.message}`);
   }
 }
 
 export async function isLikedThread(threadId: string, userId: string) {
   try {
-    connectToDB();
-
-    const thread = await Thread.findById(threadId);
-
+    const thread = await fetchThreadById(threadId);
     const user = await fetchUser(userId);
 
-    if(!thread) {
+    if (!thread) {
       throw new Error("Thread not found");
     }
-    if(!user) {
+    if (!user) {
       throw new Error("User not found");
     }
 
-    return thread.likes.includes(user._id);
+    return thread.likedByIds.includes(user.id);
   } catch (error: any) {
-    throw new Error(`Failed to fetch thread: ${error.message}`)
+    throw new Error(`Failed to fetch thread: ${error.message}`);
   }
 }
 
 export async function fetchLikeCount(threadId: string) {
   try {
-    connectToDB();
+    const thread = await fetchThreadById(threadId);
 
-    const thread = await Thread.findById(threadId);
-
-    if(!thread) {
+    if (!thread) {
       throw new Error("Thread not found");
     }
 
-    return thread.likes.length;
+    return thread.likedByIds.length;
   } catch (error: any) {
-    throw new Error(`Failed to fetch thread: ${error.message}`)
+    throw new Error(`Failed to fetch thread: ${error.message}`);
   }
 }
+
+// to prisma from line 1 to 344

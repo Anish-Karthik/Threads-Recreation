@@ -28,8 +28,8 @@ const CommunityPage = async ({
         ) : (
           <>
             {result.communities.map((community) => (
-              <CommunityCard key={community.id} 
-                id={community.id}
+              <CommunityCard key={community.cid} 
+                id={community.cid}
                 name={community.name}
                 username={community.username}
                 imgUrl={community.image}

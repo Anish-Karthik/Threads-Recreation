@@ -27,17 +27,17 @@ export default async function Home({
             <>
               {results?.posts.map( (post) => {
                 // const community = await fetchCommunityDetails(post.community)
-                return ( 
+                return ( (post.parentId === undefined || post.parentId === null) &&
                 <ThreadCard 
-                  key={post._id}
-                  id={post._id}
+                  key={post.id}
+                  id={post.id}
                   currentUserId={user?.id || ''}
                   parentId={post.parentId}
                   comments={post.children}
                   content={post.text}
                   author={post.author}
-                  community={post.community}
-                  createdAt={post.createdAt}
+                  community={post.communityId}
+                  createdAt={post.createdAt.toDateString()}
                 />
               )})}
             </>

@@ -15,6 +15,7 @@ interface ThreadCardProps {
   parentId: string | null;
   content: string;
   author: {
+    uid: string;
     id: string;
     image: string;
     name: string;
@@ -46,7 +47,7 @@ const ThreadCard = async ({
 ) => {
   const communityDetails = await fetchCommunityDetails(community ?? "");
   const likeCount = await fetchLikeCount(id);
-  const isLiked = currentUserId && await isLikedThread(id, currentUserId);
+  const isLiked = currentUserId? await isLikedThread(id, currentUserId): false;
 
   return (
     <article className={cn('flex flex-col w-full rounded-xl', isComment? 'px-0 xs:px-7 py-3': 'bg-dark-2 p-7')}>
@@ -54,7 +55,7 @@ const ThreadCard = async ({
         {/* Author name */}
         <div className='flex w-full flex-1 flex-row gap-4'>
           <div className='flex flex-col items-center'>
-            <Link href={`/profile/${author.id}`} className='relative h-11 w-11'>
+            <Link href={`/profile/${author.uid}`} className='relative h-11 w-11'>
               <Image 
                 src={author.image}
                 alt='profile image'
@@ -67,12 +68,12 @@ const ThreadCard = async ({
 
           <div className='flex w-full flex-col'>
             <div className='flex flex-row justify-between items-center'>
-              <Link href={`/profile/${author.id}`} className='w-fit'>
+              <Link href={`/profile/${author.uid}`} className='w-fit'>
                 <h4 className='cursor-pointer text-base-semibold text-light-2'>{author.name}</h4>
               </Link>
               <div className='flex gap-2'>
-                <DeleteThread id={id} author={author.id} currentUserId={currentUserId} />
-                {currentUserId && currentUserId==author?.id && 
+                <DeleteThread id={id} author={author.uid} currentUserId={currentUserId} />
+                {currentUserId && currentUserId==author.uid && 
                   <Link href={`/thread/${id}/edit`}>
                     <Image src="/assets/edit.svg" alt='edit' width={24} height={24} className='cursor-pointer object-contain'/>
                   </Link>
@@ -84,7 +85,7 @@ const ThreadCard = async ({
 
             <div className={cn('mt-5 flex flex-col gap-3', isComment ? 'mb-10': '')}>
               <div className='flex gap-3.5'>
-                <LikeThread threadId={id} userId={currentUserId} isLiked={isLiked} path='' likeCount={likeCount} />
+                <LikeThread threadId={id} userId={currentUserId} isLiked={isLiked} path='/' likeCount={likeCount} />
                 <Link href={`/thread/${id}`} className='flex items-center'>
                   <Image src="/assets/reply.svg" alt='reply' width={24} height={24} className='cursor-pointer object-contain' />
                 </Link>
@@ -123,8 +124,8 @@ const ThreadCard = async ({
         </div>
 
       </div>
-      {!isComment && community && (
-        <Link href={`/communities/${communityDetails.id}`} className='mt-5 flex items-center'>
+      {!isComment && community && communityDetails && (
+        <Link href={`/communities/${communityDetails.cid}`} className='mt-5 flex items-center'>
           <p className='text-subtle-medium text-gray-1'>{formatDateString(createdAt)} - {communityDetails.name} Community</p>
           <Image 
             src={communityDetails.image}

@@ -14,12 +14,12 @@ function Bottombar() {
   return (
     <section className='bottombar'>
       <div className='bottombar_container'>
-        {sidebarLinks.map((link) => {
+        {sidebarLinks.map((link,ind) => {
           const isActive = pathname === link.route;
 
           if(link.route === '/profile') link.route = `/profile/${userId}` 
           
-          return <div>
+          return <div key={ind}>
             <Link href={link.route}
               key={link.label}
               className={`bottombar_link ${isActive && 'bg-primary-500'}`}
