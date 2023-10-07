@@ -305,6 +305,16 @@ export async function addMemberToCommunity(
             id: user.id,
           },
         },
+        invites: {
+          disconnect: {
+            id: user.id,
+          },
+        },
+        requests: {
+          disconnect: {
+            id: user.id,
+          },
+        },
       },
     });
 
@@ -316,6 +326,16 @@ export async function addMemberToCommunity(
       data: {
         communities: {
           connect: {
+            id: community.id,
+          },
+        },
+        invitedCommunities: {
+          disconnect: {
+            id: community.id,
+          },
+        },
+        requestedCommunities: {
+          disconnect: {
             id: community.id,
           },
         },
@@ -383,10 +403,12 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
       },
     });
 
-    if ((community.createdById === user.id && community.membersIds.length > 0) || community.membersIds.length === 0) {
+    if (
+      (community.createdById === user.id && community.membersIds.length > 0) ||
+      community.membersIds.length === 0
+    ) {
       await deleteCommunity(cid, "/communities/" + cid);
     }
-
 
     return { success: true };
   } catch (error) {
@@ -466,8 +488,6 @@ export async function deleteCommunity(cid: string, path: string) {
         cid: cid,
       },
     });
-
-    
 
     revalidatePath("/");
     return deletedCommunity;
