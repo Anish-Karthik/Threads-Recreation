@@ -4,7 +4,7 @@ import { toggleLikeThread } from '@/lib/actions/thread.actions';
 import { useAuth } from '@clerk/nextjs';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 
 interface LikeThreadProps {
@@ -35,6 +35,9 @@ const LikeThread = ({isLiked, threadId, userId, likeCount = 0 , path}: LikeThrea
       toast.error('Something went wrong');
     }
   }
+  useEffect(() => {
+    
+  }, [liked, likes])
 
 
   return (
