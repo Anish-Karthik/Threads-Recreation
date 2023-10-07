@@ -17,8 +17,10 @@ interface LikeThreadProps {
 
 const LikeThread = ({isLiked, threadId, userId, likeCount = 0 , path}: LikeThreadProps) => {
 
-  const [liked, setLiked] = useState(isLiked);
-  const [likes, setLikes] = useState(likeCount);
+  const [like, setLike] = useState({
+    isLiked: isLiked,
+    likes: likeCount
+  });
   const user = useAuth();
   const router = useRouter();
   const toggleHeart = async () => {
@@ -29,18 +31,16 @@ const LikeThread = ({isLiked, threadId, userId, likeCount = 0 , path}: LikeThrea
         toast.error('Something went wrong');
         return;
       }
-      setLikes(result.likes);
-      setLiked(result.isLiked);
+      setLike(result);
     } catch (error) {
       toast.error('Something went wrong');
     }
   }
 
-
   return (
     <div className='flex items-center justify-start gap-1 text-light-4'>
-      <Image src={liked?'/assets/heart-filled.svg': '/assets/heart-gray.svg'} alt='heart' width={24} height={24} className='cursor-pointer object-contain' onClick={toggleHeart}/>
-      {likes > 0 && likes}
+      <Image src={like.isLiked?'/assets/heart-filled.svg': '/assets/heart-gray.svg'} alt='heart' width={24} height={24} className='cursor-pointer object-contain' onClick={toggleHeart}/>
+      {like.likes > 0 && like.likes}
     </div>
   )
 }

@@ -383,8 +383,10 @@ export async function toggleLikeThread(
     if (!user) {
       throw new Error("User not found");
     }
-    let isLiked = false;
-    let likes = thread.likedByIds.length;
+    const like = {
+      isLiked: false,
+      likes: thread.likedByIds.length,
+    }
     if (user.likedThreads.map((thread) => thread.id).includes(threadId)) {
       await prismadb.users.update({
         where: {
@@ -410,8 +412,7 @@ export async function toggleLikeThread(
           },
         },
       });
-      isLiked = false;
-      likes -= 1;
+      like.likes -= 1;
     } else {
       await prismadb.users.update({
         where: {
@@ -437,11 +438,11 @@ export async function toggleLikeThread(
           },
         },
       });
-      isLiked = true;
-      likes += 1;
+      like.isLiked = true;
+      like.likes += 1;
     }
     revalidatePath(path);
-    return { isLiked, likes };
+    return like;
   } catch (error: any) {
     console.error(`Failed to fetch thread: ${error.message}`);
   }
