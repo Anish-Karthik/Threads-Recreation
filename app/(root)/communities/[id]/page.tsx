@@ -83,7 +83,8 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
                   userId={member.uid}
                   communityId={communityDetails.cid}
                   isMember={true}
-                  isModerator={member.moderatedCommunityIds.includes(communityDetails.cid)}
+                  isModerator={member.moderatedCommunityIds.includes(communityDetails.id)}
+                  isCreator={member.id === communityDetails.createdBy.id}
                   viewerIsModerator={isModerator}
                 />
               ))}

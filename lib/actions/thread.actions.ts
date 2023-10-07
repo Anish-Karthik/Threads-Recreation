@@ -250,11 +250,11 @@ export async function deleteThread(threadId: string, path: string) {
               id: threadId,
             },
           },
-        },
-      });
-      await prismadb.threads.delete({
-        where: {
-          id: thread.id,
+          likedBy: {
+            disconnect: {
+              id: threadId,
+            },
+          },
         },
       });
       // remove likes from users
@@ -275,6 +275,11 @@ export async function deleteThread(threadId: string, path: string) {
           });
         }
       }
+      await prismadb.threads.delete({
+        where: {
+          id: thread.id,
+        },
+      });
 
       const communityId = thread.communityId;
       if (communityId) {

@@ -51,11 +51,11 @@
 
 ## Todo
 <ul>
-  <li>Implement auto assign any moderator as creator if creator leaves or account is deleted</li>
   <li>Implement repost</li>
   <li>Implement bookmark</li>
   <li>Implement follow</li>
   <li>Implement DM</li>
+  <li>Implement auto assign any moderator as creator if creator leaves or account is deleted</li>
   <li>May change database from Mongodb to SQL</li>
   <li>May Implement GraphQL for efficient querying</li>
   <li>May add state management using Recoil/Redux</li>

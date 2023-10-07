@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import JoinOrLeave from '../thread-actions/JoinOrLeave';
 import { acceptUserRequest, addModerator, rejectUserRequest, removeModerator, removeUserFromCommunity } from '@/lib/actions/community.actions';
 import { acceptCommunityInvite, rejectCommunityInvite } from '@/lib/actions/user.actions';
+import { useAuth } from '@clerk/nextjs';
 
 interface UserCardProps {
-  key: string;
   id: string;
   name: string;
   username: string;
@@ -19,11 +19,11 @@ interface UserCardProps {
   userId?: string;
   isMember?: boolean;
   isModerator?: boolean;
+  isCreator?: boolean;
   viewerIsModerator?: boolean;
 }
 
 const UserCard = ({
-  key,
   id,
   name,
   username,
@@ -34,9 +34,11 @@ const UserCard = ({
   userId,
   isMember = false,
   isModerator = false,
+  isCreator = false,
   viewerIsModerator = false,
 }: UserCardProps) => {
   const router = useRouter();
+  const currentUser = useAuth();
 
   const isCommunity = personType === "Community";
   return (
@@ -52,7 +54,11 @@ const UserCard = ({
         </div>
 
         <div className='flex-1 text-ellipsis'>
-          <h4 className='text-base-semibold text-light-1'>{name}</h4>
+          <div className='flex justify-start items-center gap-1'>
+            <h4 className='text-base-semibold text-light-1 w-fit !mr-6'>{name}</h4>
+            {isCreator && <p className='bg-[#33353F] text-light-1 text-small-regular rounded-md flex items-center justify-center px-2'>Creator</p>}
+            {isModerator && <p className='bg-light-4 text-light-1 text-small-regular rounded-md flex items-center justify-center px-2'>Admin</p>}
+          </div>
           <p className='text-small-medium text-gray-1'>@{username}</p>
         </div>
       </div>
@@ -87,7 +93,7 @@ const UserCard = ({
           action='Reject'
         />
       }
-      {communityId && isMember && viewerIsModerator &&(
+      {!isCreator && currentUser.userId !==id && communityId && isMember && viewerIsModerator &&(
         <JoinOrLeave
           communityId={communityId}
           isMember={isMember}
@@ -96,7 +102,7 @@ const UserCard = ({
           action="Remove" 
         />
       )}
-      {communityId && isMember && viewerIsModerator &&(
+      {!isCreator && currentUser.userId !==id && communityId && isMember && viewerIsModerator &&(
         <JoinOrLeave
           communityId={communityId}
           isMember={isMember}

@@ -402,6 +402,17 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
         },
       },
     });
+    // remove user community threads
+    const threads = await prismadb.threads.findMany({
+      where: {
+        communityId: community.id,
+        authorId: user.id,
+      },
+    });
+
+    threads.forEach(async (thread) => {
+      await deleteThread(thread.id, "/communities/" + cid);
+    });
 
     if (
       (community.createdById === user.id && community.membersIds.length > 0) ||
