@@ -355,3 +355,49 @@ export async function acceptCommunityInvite(cid: string, uid: string) {
     throw error;
   }
 }
+
+// reject community invite
+export async function rejectCommunityInvite(cid: string, uid: string) {
+  try {
+    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid);
+
+    if (!community) {
+      throw new Error("Community not found");
+    }
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await prismadb.communities.update({
+      where: {
+        cid: cid,
+      },
+      data: {
+        invites: {
+          disconnect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+
+    await prismadb.users.update({
+      where: {
+        uid: uid,
+      },
+      data: {
+        invitedCommunities: {
+          disconnect: {
+            id: community.id,
+          },
+        },
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error accepting community invite: ", error);
+    throw error;
+  }
+}

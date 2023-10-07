@@ -4,8 +4,8 @@ import React from 'react'
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import JoinOrLeave from '../thread-actions/JoinOrLeave';
-import { acceptUserRequest } from '@/lib/actions/community.actions';
-import { acceptCommunityInvite } from '@/lib/actions/user.actions';
+import { acceptUserRequest, rejectUserRequest } from '@/lib/actions/community.actions';
+import { acceptCommunityInvite, rejectCommunityInvite } from '@/lib/actions/user.actions';
 
 interface UserCardProps {
   key: string;
@@ -70,6 +70,15 @@ const UserCard = ({
           onActionCallback={inviteType === "Invites"? acceptCommunityInvite: acceptUserRequest}
           memberId={userId}
           text='Accept'
+        />
+      }
+      {inviteType && userId && communityId && 
+        <JoinOrLeave 
+          communityId={communityId}
+          isMember={false}
+          onActionCallback={inviteType === "Invites"? rejectCommunityInvite: rejectUserRequest}
+          memberId={userId}
+          text='Reject'
         />
       }
     </article>
