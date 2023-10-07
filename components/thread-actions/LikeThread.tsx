@@ -40,7 +40,7 @@ const LikeThread = ({isLiked, threadId, userId, likeCount = 0 , path}: LikeThrea
   return (
     <div className='flex items-center justify-start gap-1 text-light-4'>
       <Image src={liked?'/assets/heart-filled.svg': '/assets/heart-gray.svg'} alt='heart' width={24} height={24} className='cursor-pointer object-contain' onClick={toggleHeart}/>
-      {likeCount + (liked?1:0) > 0 && likeCount + (liked?1:0) }
+      {likeCount + (liked? 1 : 0) > 0  && likeCount + (liked? 1 : 0) === likeCount ? likeCount + 1: likeCount + (liked? 1 : 0)}
     </div>
   )
 }
