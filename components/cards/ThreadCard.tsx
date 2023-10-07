@@ -75,7 +75,7 @@ const ThreadCard = async ({
                 <h4 className='cursor-pointer text-base-semibold text-light-2'>{author.name}</h4>
               </Link>
 
-              {((currentUserId && currentUserId==author.uid) || (community && communityDetails && communityDetails.moderatorsIds.includes(userInfo.id)))&& 
+              {((currentUserId && currentUserId==author.uid) || (community && communityDetails && communityDetails.moderatorsIds.includes(userInfo?.id)))&& 
                 <div className='flex gap-2'>
                   <DeleteEntity id={id} type="Thread" deleteCallback={deleteThread} />
                   <Link href={`/thread/${id}/edit`}>
