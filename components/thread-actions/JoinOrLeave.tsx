@@ -23,16 +23,19 @@ import { InviteValidation } from '@/lib/validations/community';
 import { SelectCommunity } from '../forms/PostThread';
 import { z } from 'zod';
 
+const positiveActions = new Set(["Invite", "Join", "Accept", "Promote"]);
+const negativeActions = new Set(["Leave", "Reject", "Remove", "Demote"]);
+
 type props = {
   communityId: string;
   memberId: string;
   onActionCallback: any;
   isMember: boolean;
-  text?: "Invite" | "Join" | "Leave" | "Request" | "Accept" | "Reject";
+  action: "Invite" | "Join" | "Leave" | "Request" | "Accept" | "Reject" | "Remove" | "Promote" | "Demote";
   notJoinedCommunities?: string[];
 }
 
-const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember, text, notJoinedCommunities = [] }: props) => {
+const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember, action, notJoinedCommunities = [] }: props) => {
   
   const pathname = usePathname();
   const router = useRouter();
@@ -44,7 +47,8 @@ const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember, text, 
     setIsSubmiting(true);
     try {
       await onActionCallback(communityId, memberId);
-      toast.success(`Successfully ${isMember? "Left": text+"ed to" || "Joined"} the community`);
+      toast.success(`Successfully ${action} the community`);
+      router.refresh();
     } catch (error) {
       toast.error(error.message);
     }
@@ -54,7 +58,7 @@ const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember, text, 
   const onSubmit = async (values: z.infer<typeof InviteValidation>) => {
     setIsSubmiting(true);
     try {
-      const result = await onActionCallback(values.cid, memberId);
+      await onActionCallback(values.cid, memberId);
       toast.success(`Successfully Invited user to the community`);
     } catch (error) {
       toast.error(error.message);
@@ -65,13 +69,13 @@ const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember, text, 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={(isMember || text==="Reject") ?"destructive":"userbtn"}  className='text-subtle-medium cursor-pointer h-auto min-w-[74px] !rounded-lg'>{isMember? "Leave": text || "Join"}</Button>
+        <Button variant={(negativeActions.has(action)) ?"negative":"userbtn"}  className='text-subtle-medium cursor-pointer'>{action}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-dark-2 text-light-2"  >
         <DialogHeader>
-          <DialogTitle className='text-light-2'>{(isMember?"Leave": text || "Join") + " Community"}</DialogTitle>
+          <DialogTitle className='text-light-2'>{action + " Community"}</DialogTitle>
           <DialogDescription>
-            {text == "Invite" && (
+            {action == "Invite" && (
               <Form {...form}> 
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-start gap-10">
                   <SelectCommunity form={form} name="cid" communities={notJoinedCommunities}/>
@@ -80,22 +84,22 @@ const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember, text, 
                       <Button variant={"secondary"} >Cancel</Button>
                     </DialogPrimitive.Close>
                     <DialogPrimitive.Close>
-                      <Button variant="secondary" disabled={isSubmiting} type='submit' >Invite</Button>
+                      <Button variant="userbtn" disabled={isSubmiting} type='submit'>Invite</Button>
                     </DialogPrimitive.Close>
                   </div>
                 </form>
               </Form>
             )}
-            {text !== "Invite" && (isMember? "Are you sure you want to leave this community?" : "Do you want to join this community?")}.
+            {action !== "Invite" && (isMember? "Are you sure you want to leave this community?" : "Do you want to join this community?")}.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          {text !== "Invite" && <div className='flex justify-end gap-5 flex-wrap'>
+          {action !== "Invite" && <div className='flex justify-end gap-5 flex-wrap'>
             <DialogPrimitive.Close>
               <Button variant={"secondary"} >Cancel</Button>
             </DialogPrimitive.Close>
             <DialogPrimitive.Close>
-              <Button variant={isMember?"destructive":"secondary"} disabled={isSubmiting} onClick={handleAction} >{isMember?"Leave": text || "Join"}</Button>
+              <Button variant={negativeActions.has(action)?"destructive":"secondary"} disabled={isSubmiting} onClick={handleAction} >{action}</Button>
             </DialogPrimitive.Close>
           </div>}
         </DialogFooter>

@@ -44,13 +44,13 @@
     <li>Implemented user request to join community</li>
     <li>Implemented community invite to user</li>
     <li>Implemented joinType for community</li>
+    <li>Implement add/remove moderator</li>
   </ul>
   <br>
 </ul>
 
 ## Todo
 <ul>
-  <li>Implement add/remove moderator</li>
   <li>Implement auto assign any moderator as creator if creator leaves or account is deleted</li>
   <li>Implement repost</li>
   <li>Implement bookmark</li>

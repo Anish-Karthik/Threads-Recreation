@@ -38,6 +38,7 @@ import Link from 'next/link'
 
 const ShareThread = ({ threadId }: {threadId?: string}) => {
   const pathname = usePathname()
+  // replace this with correct method
   const baseUrl = window.location.href.replace(pathname, '/');
   const curentUrl = 'thread/' + threadId;
   const handleCopy = () => {

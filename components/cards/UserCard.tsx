@@ -4,7 +4,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import JoinOrLeave from '../thread-actions/JoinOrLeave';
-import { acceptUserRequest, rejectUserRequest } from '@/lib/actions/community.actions';
+import { acceptUserRequest, addModerator, rejectUserRequest, removeModerator, removeUserFromCommunity } from '@/lib/actions/community.actions';
 import { acceptCommunityInvite, rejectCommunityInvite } from '@/lib/actions/user.actions';
 
 interface UserCardProps {
@@ -17,6 +17,9 @@ interface UserCardProps {
   inviteType?: "Requests" | "Invites";
   communityId?: string;
   userId?: string;
+  isMember?: boolean;
+  isModerator?: boolean;
+  viewerIsModerator?: boolean;
 }
 
 const UserCard = ({
@@ -28,7 +31,10 @@ const UserCard = ({
   personType,
   inviteType,
   communityId,
-  userId
+  userId,
+  isMember = false,
+  isModerator = false,
+  viewerIsModerator = false,
 }: UserCardProps) => {
   const router = useRouter();
 
@@ -69,7 +75,7 @@ const UserCard = ({
           isMember={false}
           onActionCallback={inviteType === "Invites"? acceptCommunityInvite: acceptUserRequest}
           memberId={userId}
-          text='Accept'
+          action='Accept'
         />
       }
       {inviteType && userId && communityId && 
@@ -78,9 +84,28 @@ const UserCard = ({
           isMember={false}
           onActionCallback={inviteType === "Invites"? rejectCommunityInvite: rejectUserRequest}
           memberId={userId}
-          text='Reject'
+          action='Reject'
         />
       }
+      {communityId && isMember && viewerIsModerator &&(
+        <JoinOrLeave
+          communityId={communityId}
+          isMember={isMember}
+          onActionCallback={removeUserFromCommunity}
+          memberId={userId}
+          action="Remove" 
+        />
+      )}
+      {communityId && isMember && viewerIsModerator &&(
+        <JoinOrLeave
+          communityId={communityId}
+          isMember={isMember}
+          onActionCallback={isModerator ? removeModerator : addModerator}
+          memberId={userId}
+          action={isModerator ? "Demote" : "Promote"}
+        />
+      )}
+
     </article>
   )
 }

@@ -67,15 +67,15 @@ const ProfileHeader = ({
           
         <div className='flex gap-2'>
           {!isMember && canRequest && (type === "Community" && joinMode === "approval"? (
-            <JoinOrLeave text={"Request"} isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={requestToJoinCommunity} />
+            <JoinOrLeave action={"Request"} isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={requestToJoinCommunity} />
           ): (<>{notJoinedCommunities && notJoinedCommunities.length > 0 &&
-            <JoinOrLeave text={"Invite"} notJoinedCommunities={notJoinedCommunities} isMember={isMember} communityId={accountId} memberId={accountId} onActionCallback={inviteUserToCommunity} />}</>
+            <JoinOrLeave action={"Invite"} notJoinedCommunities={notJoinedCommunities} isMember={isMember} communityId={accountId} memberId={accountId} onActionCallback={inviteUserToCommunity} />}</>
           ))}
 
           { type === "Community" && (isMember ? (
-            <JoinOrLeave isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={removeUserFromCommunity} />
+            <JoinOrLeave isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={removeUserFromCommunity} action='Leave' />
           ): joinMode === "open" && (
-            <JoinOrLeave isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={addMemberToCommunity} />
+            <JoinOrLeave isMember={isMember} communityId={accountId} memberId={authUserId} onActionCallback={addMemberToCommunity} action='Join' />
           ))}
           
         </div>

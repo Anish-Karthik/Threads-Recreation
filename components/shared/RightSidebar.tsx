@@ -10,38 +10,38 @@ async function RightSidebar() {
   // if(!user) return null;
   const communities = await fetchCommunities({
     pageNumber: 1,
-    pageSize: 2,
+    pageSize: 4,
     sortBy: "desc",
   });
   const users = await fetchUsers({
     userId: user?.id || '',
     pageNumber: 1,
-    pageSize: 3,
+    pageSize: 4,
     sortBy: "desc",
   });
   return (
     <section className='custom-scrollbar rightsidebar'>
       <div className='flex flex-1 flex-col justify-start'>
         <h3 className='text-light-1 text-heading4-medium'>Suggested Communities</h3>
-        <div className='flex flex-col gap-2'>
-          {communities?.communities.map((community) => (
-            <CommunityCard
-              key={community.id}
+        <div className='flex flex-col gap-3'>
+          {communities ? communities.communities.map((community) => (
+            <UserCard
+              key={community.cid}
               id={community.cid}
               name={community.name}
-              cid={community.cid}
+              username={community.cid}
               imgUrl={community.image}
-              bio={community.bio}
-              members={community.members}
-              width={true}
+              personType='Community'
             />
-          ))}
+          )):(
+            <p>No Communities</p>
+          )}
         </div>
       </div>
       <div className='flex flex-1 flex-col justify-start'>
         <h3 className='text-light-1 text-heading4-medium'>Suggested Users</h3>
-        <div className='mt-2 flex flex-col gap-2'>
-          {users?.users.map((user) => (
+        <div className='mt-2 flex flex-col gap-3'>
+          {users ? users.users.map((user) => (
             <UserCard
               key={user.uid}
               id={user.uid}
@@ -50,7 +50,9 @@ async function RightSidebar() {
               imgUrl={user.image}
               personType='User'
             />
-          ))}
+          )):(
+            <p>No Users</p>
+          )}
         </div>
       </div>
     </section>

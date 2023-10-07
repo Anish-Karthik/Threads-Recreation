@@ -80,6 +80,11 @@ const CommunityPage = async ({ params }: { params: {id: string } }) => {
                   username={member.username}
                   imgUrl={member.image}
                   personType='User'
+                  userId={member.uid}
+                  communityId={communityDetails.cid}
+                  isMember={true}
+                  isModerator={member.moderatedCommunityIds.includes(communityDetails.cid)}
+                  viewerIsModerator={isModerator}
                 />
               ))}
             </section>
