@@ -36,7 +36,7 @@ const LikeThread = ({isLiked, threadId, userId, likeCount = 0 , path}: LikeThrea
     }
   }
   useEffect(() => {
-    
+    setLikes((prev) => prev );
   }, [liked, likes])
 
 
