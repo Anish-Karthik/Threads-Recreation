@@ -1,15 +1,19 @@
 import AccountProfile from "@/components/forms/AccountProfile";
 import { fetchUser } from "@/lib/actions/user.actions";
 import { currentUser } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
 const ProfilePage = async ({ params }: { params: {id: string } }) => {
-  const user = await currentUser()
 
-  if(!user)  return null;
+  const user = await currentUser();
+  if(!user)  redirect('/');
 
   const userInfo = await fetchUser(params.id);
-
-  if(!userInfo) return null;
+  if(!userInfo) redirect('/');
+  if(!userInfo?.onboarded) redirect('/onboarding');
+  
+  // TODO: show unauthorized page
+  if(user.id !== params.id) redirect('/');
 
   const userData = {
     id: user.id,

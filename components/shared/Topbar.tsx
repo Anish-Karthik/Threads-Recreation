@@ -1,8 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { SignedIn, SignOutButton, OrganizationSwitcher } from '@clerk/nextjs'
-import { dark } from '@clerk/themes'
+import { SignedIn, SignOutButton } from '@clerk/nextjs'
+
 function Topbar() {
   const isUserLoggedIn = true;
   return (
@@ -21,19 +21,6 @@ function Topbar() {
             </SignOutButton>
           </SignedIn>
         </div>
-
-        <Link href={"/profile"}>
-          <Image src={"/assets/user.svg"} alt={"Profile"} width={24} height={24} />
-        </Link>
-        {/* 
-        <OrganizationSwitcher 
-          appearance={{
-            baseTheme: dark,
-            elements: {
-              organizationSwitcherTrigger: "py-2 px-4"
-            }
-          }}
-        /> */}
 
       </div>
     </nav>
