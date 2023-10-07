@@ -361,6 +361,9 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
     if (!community) {
       throw new Error("Community not found");
     }
+    if (!community.membersIds.includes(user.id)) {
+      throw new Error("User not member");
+    }
 
     await prismadb.communities.update({
       where: {
@@ -395,11 +398,6 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
             id: community.id,
           },
         },
-        createdCommunities: {
-          disconnect: {
-            id: community.id,
-          },
-        },
       },
     });
     // remove user community threads
@@ -415,7 +413,7 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
     });
 
     if (
-      (community.createdById === user.id && community.membersIds.length > 0) ||
+      community.createdById === user.id ||
       community.membersIds.length === 0
     ) {
       await deleteCommunity(cid, "/communities/" + cid);
