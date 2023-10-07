@@ -65,7 +65,7 @@ const JoinOrLeave = ({ communityId, memberId, onActionCallback, isMember, text, 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={(isMember || text==="Reject") ?"destructive":"default"}  className={cn('text-subtle-medium cursor-pointer',isMember ?"text-light-2":"user-card_btn")}>{isMember? "Leave": text || "Join"}</Button>
+        <Button variant={(isMember || text==="Reject") ?"destructive":"userbtn"}  className='text-subtle-medium cursor-pointer h-auto min-w-[74px] !rounded-lg'>{isMember? "Leave": text || "Join"}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-dark-2 text-light-2"  >
         <DialogHeader>
