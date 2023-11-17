@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverActions: true,
-  },
+  
   images: {
     domains: [
       "img.clerk.com",
@@ -29,9 +27,6 @@ const nextConfig = {
         hostname: "placehold.co",
       }, 
     ],
-    typescript: {
-      ignoreBuildErrors: true,
-    },
   },
 };
 
