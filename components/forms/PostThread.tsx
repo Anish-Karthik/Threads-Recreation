@@ -1,4 +1,15 @@
-"use client";
+"use client"
+
+import { useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { communities } from "@prisma/client"
+import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
+import { z } from "zod"
+
+import { createThread } from "@/lib/actions/thread.actions"
+import { ThreadValidation } from "@/lib/validations/thread"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -16,54 +27,63 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useRouter, usePathname } from 'next/navigation';
-import { ThreadValidation } from "@/lib/validations/thread";
-import { createThread } from "@/lib/actions/thread.actions";
-import { communities } from "@prisma/client";
-import toast from "react-hot-toast";
-import { useState } from "react";
-import { CustomTextArea } from "../form-fields";
+import { CustomTextArea } from "../form-fields"
 
-const PostThread = ({ userId, communities }: { userId: string, communities: communities[] }) => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const PostThread = ({
+  userId,
+  communities,
+}: {
+  userId: string
+  communities: communities[]
+}) => {
+  const router = useRouter()
+  const pathname = usePathname()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm({
     resolver: zodResolver(ThreadValidation),
     defaultValues: {
-      thread: '',
+      thread: "",
       accountId: userId,
-      communityId: 'individual',
-    }
-  });
+      communityId: "individual",
+    },
+  })
   async function onSubmit(values: z.infer<typeof ThreadValidation>) {
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
       await createThread({
         text: values.thread,
         author: userId,
-        communityId: values.communityId === 'individual' ? null : values.communityId,
+        communityId:
+          values.communityId === "individual" ? null : values.communityId,
         path: pathname,
-      });
-      toast.success('Thread Posted Successfully');
-      router.push('/')
+      })
+      toast.success("Thread Posted Successfully")
+      router.push("/")
     } catch (error) {
-      console.log(error);
-      toast.error(error.message);
-      setIsSubmitting(false);
+      console.log(error)
+      toast.error(error.message)
+      setIsSubmitting(false)
     }
   }
 
   return (
-    <Form {...form}> 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-start gap-10">
-        <SelectCommunity form={form} name="communityId" communities={communities}/>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col justify-start gap-10"
+      >
+        <SelectCommunity
+          form={form}
+          name="communityId"
+          communities={communities}
+        />
         <CustomTextArea form={form} name="thread" alt="content" />
-        <Button type="submit" className="bg-primary-500" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="bg-primary-500"
+          disabled={isSubmitting}
+        >
           Post Thread
         </Button>
       </form>
@@ -74,36 +94,40 @@ const PostThread = ({ userId, communities }: { userId: string, communities: comm
 export default PostThread
 
 type ThreadFormFieldProps = {
-  form: any;
-  name: string;
-  defaultValue?: string;
+  form: any
+  name: string
+  defaultValue?: string
 }
 
-
-
-export function SelectCommunity({ form, name, defaultValue, communities } : ThreadFormFieldProps & { communities: communities[] | string[] }) {
-
+export function SelectCommunity({
+  form,
+  name,
+  defaultValue,
+  communities,
+}: ThreadFormFieldProps & { communities: communities[] | string[] }) {
   return (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className='flex flex-col gap-3 w-full'>
-          <FormLabel className='text-base-semibold text-light-2'>
+        <FormItem className="flex w-full flex-col gap-3">
+          <FormLabel className="text-base-semibold text-light-2">
             Type of Thread
           </FormLabel>
           <FormControl>
-            <Select 
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-            >
-              <SelectTrigger className="w-[180px] bg-dark-2 text-light-2 border-none">
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <SelectTrigger className="w-[180px] border-none bg-dark-2 text-light-2">
                 <SelectValue placeholder="Post Via" />
               </SelectTrigger>
-              <SelectContent className="bg-dark-2 text-light-2 border-none">
-                {communities[0] && communities[0]['id'] && <SelectItem value="individual">Individual</SelectItem>}
+              <SelectContent className="border-none bg-dark-2 text-light-2">
+                {communities[0] && communities[0]["id"] && (
+                  <SelectItem value="individual">Individual</SelectItem>
+                )}
                 {communities.map((community, ind) => (
-                  <SelectItem key={ind} value={community?.cid?.toString() || community}>
+                  <SelectItem
+                    key={ind}
+                    value={community?.cid?.toString() || community}
+                  >
                     {community?.name || community}
                   </SelectItem>
                 ))}

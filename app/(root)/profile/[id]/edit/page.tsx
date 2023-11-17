@@ -1,19 +1,19 @@
-import AccountProfile from "@/components/forms/AccountProfile";
-import { fetchUser } from "@/lib/actions/user.actions";
-import { currentUser } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
+import { redirect } from "next/navigation"
+import { currentUser } from "@clerk/nextjs"
 
-const ProfilePage = async ({ params }: { params: {id: string } }) => {
+import { fetchUser } from "@/lib/actions/user.actions"
+import AccountProfile from "@/components/forms/AccountProfile"
 
-  const user = await currentUser();
-  if(!user)  redirect('/');
+const ProfilePage = async ({ params }: { params: { id: string } }) => {
+  const user = await currentUser()
+  if (!user) redirect("/")
 
-  const userInfo = await fetchUser(params.id);
-  if(!userInfo) redirect('/');
-  if(!userInfo?.onboarded) redirect('/onboarding');
-  
+  const userInfo = await fetchUser(params.id)
+  if (!userInfo) redirect("/")
+  if (!userInfo?.onboarded) redirect("/onboarding")
+
   // TODO: show unauthorized page
-  if(user.id !== params.id) redirect('/');
+  if (user.id !== params.id) redirect("/")
 
   const userData = {
     id: user.id,
@@ -22,16 +22,16 @@ const ProfilePage = async ({ params }: { params: {id: string } }) => {
     name: userInfo.name,
     bio: userInfo.bio,
     image: userInfo.image,
-  };
+  }
 
   return (
-    <main className='mx-auto flex max-w-3xl flex-col justify-start'>
-      <h1 className='head-text mb-4'>Edit Profile</h1>
-      <section className='   bg-dark-2 p-10'>
-        <AccountProfile user={userData} btnTitle='Save' />
+    <main className="mx-auto flex max-w-3xl flex-col justify-start">
+      <h1 className="head-text mb-4">Edit Profile</h1>
+      <section className="   bg-dark-2 p-10">
+        <AccountProfile user={userData} btnTitle="Save" />
       </section>
     </main>
-  );
+  )
 }
 
-export default ProfilePage;
+export default ProfilePage

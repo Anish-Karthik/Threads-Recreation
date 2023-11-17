@@ -1,12 +1,14 @@
-import { fetchUserPosts } from '@/lib/actions/user.actions';
-import React from 'react'
-import ThreadCard from '../cards/ThreadCard';
-import { fetchCommunityPosts } from '@/lib/actions/community.actions';
+import React from "react"
+
+import { fetchCommunityPosts } from "@/lib/actions/community.actions"
+import { fetchUserPosts } from "@/lib/actions/user.actions"
+
+import ThreadCard from "../cards/ThreadCard"
 
 interface ThreadsTabProps {
-  currentUserId: string;
-  accountId: string;
-  accountType: "User" | "Community";
+  currentUserId: string
+  accountId: string
+  accountType: "User" | "Community"
 }
 
 const ThreadsTab = async ({
@@ -14,13 +16,37 @@ const ThreadsTab = async ({
   accountId,
   accountType,
 }: ThreadsTabProps) => {
-  if(accountType === 'User') {  
-    const result = await fetchUserPosts(accountId);
-    if(!result) return null;
+  if (accountType === "User") {
+    const result = await fetchUserPosts(accountId)
+    if (!result) return null
 
     return (
-      <section className='mt-9 flex flex-col gap-10'>
-        {result && result.threads.map((thread) => (
+      <section className="mt-9 flex flex-col gap-10">
+        {result &&
+          result.threads.map((thread) => (
+            <ThreadCard
+              key={thread.id}
+              id={thread.id}
+              currentUserId={currentUserId}
+              parentId={thread.parentId}
+              comments={thread.children}
+              content={thread.text}
+              author={result}
+              community={thread.communityId}
+              createdAt={thread.createdAt.toDateString()}
+              isComment={true}
+            />
+          ))}
+      </section>
+    )
+  }
+  const result = await fetchCommunityPosts(accountId)
+
+  if (!result) return <>{result?.id}</>
+  return (
+    <section className="mt-9 flex flex-col gap-10">
+      {result &&
+        result.threads.map((thread) => (
           <ThreadCard
             key={thread.id}
             id={thread.id}
@@ -28,40 +54,14 @@ const ThreadsTab = async ({
             parentId={thread.parentId}
             comments={thread.children}
             content={thread.text}
-            author={result} 
-            community={thread.communityId} 
+            author={thread.author}
+            community={thread.communityId} //todo
             createdAt={thread.createdAt.toDateString()}
             isComment={true}
           />
-        ))
-
-        }
-      </section>
-    )
-  } 
-  const result = await fetchCommunityPosts(accountId);
-
-  if(!result) return <>{result?.id}</>;
-  return (
-    <section className='mt-9 flex flex-col gap-10'>
-      {result && result.threads.map((thread) => (
-        <ThreadCard
-          key={thread.id}
-          id={thread.id}
-          currentUserId={currentUserId}
-          parentId={thread.parentId}
-          comments={thread.children}
-          content={thread.text}
-          author={thread.author}
-          community={thread.communityId} //todo
-          createdAt={thread.createdAt.toDateString()}
-          isComment={true}
-        />
-      ))
-
-      }
+        ))}
     </section>
-  );
+  )
 }
 
 export default ThreadsTab

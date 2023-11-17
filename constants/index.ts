@@ -29,16 +29,20 @@ export const sidebarLinks = [
     route: "/profile",
     label: "Profile",
   },
-];
+]
 
 export const profileTabs = [
   { value: "threads", label: "Threads", icon: "/assets/reply.svg" },
   { value: "communities", label: "Communities", icon: "/assets/members.svg" },
-  { value: "invitedCommunities", label: "Invites", icon: "/assets/request.svg" },
-];
+  {
+    value: "invitedCommunities",
+    label: "Invites",
+    icon: "/assets/request.svg",
+  },
+]
 
 export const communityTabs = [
   { value: "threads", label: "Threads", icon: "/assets/reply.svg" },
   { value: "members", label: "Members", icon: "/assets/members.svg" },
   { value: "requests", label: "Requests", icon: "/assets/request.svg" },
-];
+]

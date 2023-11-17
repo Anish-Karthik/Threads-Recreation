@@ -1,7 +1,8 @@
-"use server";
+"use server"
 
-import { revalidatePath } from "next/cache";
-import prismadb from "./prismadb";
+import { revalidatePath } from "next/cache"
+
+import prismadb from "./prismadb"
 
 export async function getActivityRepliedToUser(userId: string) {
   try {
@@ -20,14 +21,14 @@ export async function getActivityRepliedToUser(userId: string) {
           },
         },
       },
-    });
+    })
     // get all child thread ids, and remove duplicates and flatten array to 1d
 
     const childThreadIds = userThreads
       .map((userThread) => {
-        return userThread.children.map((child) => child.id);
+        return userThread.children.map((child) => child.id)
       })
-      .flat();
+      .flat()
 
     const replies = await prismadb.threads.findMany({
       where: {
@@ -48,19 +49,19 @@ export async function getActivityRepliedToUser(userId: string) {
       orderBy: {
         createdAt: "desc",
       },
-    });
+    })
 
-    return replies;
+    return replies
   } catch (error: any) {
-    throw new Error(`Failed to fetch user activity: ${error.message}`);
+    throw new Error(`Failed to fetch user activity: ${error.message}`)
   }
 }
 
-export async function getActivityLikedToUser(userId: string) { 
+export async function getActivityLikedToUser(userId: string) {
   try {
     // find users who liked the user's threads
     if (!userId) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
 
     let likedThreads = await prismadb.users.findUnique({
@@ -74,25 +75,23 @@ export async function getActivityLikedToUser(userId: string) {
           },
         },
       },
-    });
+    })
 
     if (!likedThreads) {
-      return [];
+      return []
     }
 
     let liked = likedThreads.threads
       .map((thread) => {
         return thread.likedBy.map((user) => {
-          return { id: thread.id, author: user };
-        });
+          return { id: thread.id, author: user }
+        })
       })
-      .flat();
+      .flat()
 
-    
-
-    return liked;
+    return liked
   } catch (error: any) {
-    throw new Error(`Failed to fetch user activity: ${error.message}`);
+    throw new Error(`Failed to fetch user activity: ${error.message}`)
   }
 }
 
@@ -109,7 +108,7 @@ export async function getActivityLikedByUser(userId: string) {
           id: true,
         },
       })
-    ).map((thread) => thread.id);
+    ).map((thread) => thread.id)
 
     const liked = await prismadb.threads.findMany({
       where: {
@@ -121,10 +120,10 @@ export async function getActivityLikedByUser(userId: string) {
       orderBy: {
         createdAt: "desc",
       },
-    });
+    })
 
-    return liked;
+    return liked
   } catch (error: any) {
-    throw new Error(`Failed to fetch user activity: ${error.message}`);
+    throw new Error(`Failed to fetch user activity: ${error.message}`)
   }
 }

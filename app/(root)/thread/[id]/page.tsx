@@ -1,28 +1,29 @@
-import ThreadCard from '@/components/cards/ThreadCard'
-import React from 'react'
-import { currentUser } from '@clerk/nextjs'
-import { fetchUser } from '@/lib/actions/user.actions'
-import { redirect } from 'next/navigation'
-import { fetchThreadById } from '@/lib/actions/thread.actions'
-import Comment from '@/components/forms/Comment'
+import React from "react"
+import { redirect } from "next/navigation"
+import { currentUser } from "@clerk/nextjs"
 
-const ThreadDetailsPage = async ({ params }: { params: { id : string }}) => {
+import { fetchThreadById } from "@/lib/actions/thread.actions"
+import { fetchUser } from "@/lib/actions/user.actions"
+import ThreadCard from "@/components/cards/ThreadCard"
+import Comment from "@/components/forms/Comment"
+
+const ThreadDetailsPage = async ({ params }: { params: { id: string } }) => {
   const { id } = params
-  if (!id) return null;
-  
-  const user = await currentUser();
-  if(!user) redirect('/sign-in');
+  if (!id) return null
 
-  const userInfo = await fetchUser(user.id);
-  if(!userInfo?.onboarded) redirect('/onboarding');
+  const user = await currentUser()
+  if (!user) redirect("/sign-in")
 
-  const thread = await fetchThreadById(id);
-  if(!thread) redirect('/')
+  const userInfo = await fetchUser(user.id)
+  if (!userInfo?.onboarded) redirect("/onboarding")
+
+  const thread = await fetchThreadById(id)
+  if (!thread) redirect("/")
 
   return (
-    <section className='relative'>
+    <section className="relative">
       <div>
-        <ThreadCard 
+        <ThreadCard
           key={thread.id}
           id={thread.id}
           currentUserId={user.id}
@@ -35,31 +36,30 @@ const ThreadDetailsPage = async ({ params }: { params: { id : string }}) => {
         />
       </div>
 
-      <div className='mt-7'>
-        <Comment 
+      <div className="mt-7">
+        <Comment
           threadId={thread.id}
           currentUserImg={userInfo.image}
-          currentUserId={JSON.stringify(userInfo.id)} 
+          currentUserId={JSON.stringify(userInfo.id)}
         />
       </div>
 
-      <div className='mt-7'>
+      <div className="mt-7">
         {thread.children.map((comment) => (
-        <ThreadCard 
-          key={comment.id}
-          id={comment.id}
-          currentUserId={user.id}
-          parentId={comment.parentId}
-          comments={comment.children}
-          content={comment.text}
-          author={comment.author}
-          community={comment.communityId}
-          createdAt={comment.createdAt.toDateString()}
-          isComment={true}
-        />
+          <ThreadCard
+            key={comment.id}
+            id={comment.id}
+            currentUserId={user.id}
+            parentId={comment.parentId}
+            comments={comment.children}
+            content={comment.text}
+            author={comment.author}
+            community={comment.communityId}
+            createdAt={comment.createdAt.toDateString()}
+            isComment={true}
+          />
         ))}
       </div>
-
     </section>
   )
 }

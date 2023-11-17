@@ -1,11 +1,12 @@
-"use server";
+"use server"
 
-import { revalidatePath } from "next/cache";
-import prismadb from "./prismadb";
-import { fetchUser } from "./user.actions";
-import { deleteThread } from "./thread.actions";
+import { revalidatePath } from "next/cache"
 
-type SortOrder = "asc" | "desc";
+import prismadb from "./prismadb"
+import { deleteThread } from "./thread.actions"
+import { fetchUser } from "./user.actions"
+
+type SortOrder = "asc" | "desc"
 
 export async function isAlreadyCommunity(cid: string) {
   try {
@@ -13,12 +14,12 @@ export async function isAlreadyCommunity(cid: string) {
       where: {
         cid: cid,
       },
-    });
-    return !!community && cid !== community?.cid;
+    })
+    return !!community && cid !== community?.cid
   } catch (error) {
     // Handle any errors
-    console.error("Error checking if community exists:", error);
-    throw error;
+    console.error("Error checking if community exists:", error)
+    throw error
   }
 }
 
@@ -30,22 +31,22 @@ export async function createCommunity({
   createdById,
   joinMode,
 }: {
-  name: string;
-  cid: string;
-  image: string;
-  bio: string;
-  createdById: string;
-  joinMode: string;
+  name: string
+  cid: string
+  image: string
+  bio: string
+  createdById: string
+  joinMode: string
 }) {
   try {
     // Find the user with the provided unique id
-    const user = await fetchUser(createdById);
+    const user = await fetchUser(createdById)
 
     if (!user) {
-      throw new Error("User not found"); // Handle the case if the user with the id is not found
+      throw new Error("User not found") // Handle the case if the user with the id is not found
     }
     if (await isAlreadyCommunity(cid)) {
-      throw new Error("Community with this cid already exists"); // Handle the case if the user with the id is not found
+      throw new Error("Community with this cid already exists") // Handle the case if the user with the id is not found
     }
 
     const newCommunity = await prismadb.communities.create({
@@ -67,7 +68,7 @@ export async function createCommunity({
           },
         },
       },
-    });
+    })
 
     // Update User model
     await prismadb.users.update({
@@ -91,19 +92,19 @@ export async function createCommunity({
           },
         },
       },
-    });
+    })
 
-    return newCommunity;
+    return newCommunity
   } catch (error) {
     // Handle any errors
-    console.error("Error creating community:", error);
-    throw error;
+    console.error("Error creating community:", error)
+    throw error
   }
 }
 
 export async function fetchCommunityDetails(id: string | null) {
   try {
-    if (!id) return null;
+    if (!id) return null
 
     const communityDetails = await prismadb.communities.findUnique({
       where: {
@@ -117,18 +118,18 @@ export async function fetchCommunityDetails(id: string | null) {
         requests: true,
         invites: true,
       },
-    });
+    })
 
-    return communityDetails ?? null;
+    return communityDetails ?? null
   } catch (error) {
     // Handle any errors
-    console.error("Error fetching community details:", error);
-    throw error;
+    console.error("Error fetching community details:", error)
+    throw error
   }
 }
 export async function fetchCommunityDetailsById(id: string | null) {
   try {
-    if (!id) return null;
+    if (!id) return null
 
     const communityDetails = await prismadb.communities.findUnique({
       where: {
@@ -142,13 +143,13 @@ export async function fetchCommunityDetailsById(id: string | null) {
         requests: true,
         invites: true,
       },
-    });
+    })
 
-    return communityDetails ?? null;
+    return communityDetails ?? null
   } catch (error) {
     // Handle any errors
-    console.error("Error fetching community details:", error);
-    throw error;
+    console.error("Error fetching community details:", error)
+    throw error
   }
 }
 
@@ -170,13 +171,13 @@ export async function fetchCommunityPosts(id: string) {
           },
         },
       },
-    });
+    })
 
-    return communityPosts;
+    return communityPosts
   } catch (error) {
     // Handle any errors
-    console.error("Error fetching community posts:", error);
-    throw error;
+    console.error("Error fetching community posts:", error)
+    throw error
   }
 }
 
@@ -186,17 +187,17 @@ export async function fetchCommunities({
   pageSize = 20,
   sortBy = "desc",
 }: {
-  searchString?: string;
-  pageNumber?: number;
-  pageSize?: number;
-  sortBy?: SortOrder;
+  searchString?: string
+  pageNumber?: number
+  pageSize?: number
+  sortBy?: SortOrder
 }) {
   try {
     // Calculate the number of communities to skip based on the page number and page size.
-    const skipAmount = (pageNumber - 1) * pageSize;
+    const skipAmount = (pageNumber - 1) * pageSize
 
     // Create a case-insensitive regular expression for the provided search string.
-    const regex = new RegExp(searchString, "i");
+    const regex = new RegExp(searchString, "i")
 
     // Create an initial query object to filter communities.
 
@@ -204,16 +205,16 @@ export async function fetchCommunities({
       OR: [
         {
           name: {
-            contains: string;
-            mode: "insensitive";
-          };
+            contains: string
+            mode: "insensitive"
+          }
           cid: {
-            contains: string;
-            mode: "insensitive";
-          };
+            contains: string
+            mode: "insensitive"
+          }
         }
-      ];
-    };
+      ]
+    }
     // what condition to use if searchString is empty ,then return all communities?
 
     const query: QueryType = {
@@ -229,10 +230,10 @@ export async function fetchCommunities({
           },
         },
       ],
-    };
+    }
 
     // Define the sort options for the fetched communities based on createdAt field and provided sort order.
-    const sortOptions = { createdAt: sortBy };
+    const sortOptions = { createdAt: sortBy }
 
     const communities = await prismadb.communities.findMany({
       where: {
@@ -246,22 +247,22 @@ export async function fetchCommunities({
       include: {
         members: true,
       },
-    });
+    })
 
     // Count the total number of communities that match the search criteria (without pagination).
     const totalCommunitiesCount = await prismadb.communities.count({
       where: {
         ...query,
       },
-    });
+    })
 
     // Check if there are more communities beyond the current page.
-    const isNext = totalCommunitiesCount > skipAmount + communities.length;
+    const isNext = totalCommunitiesCount > skipAmount + communities.length
 
-    return { communities, isNext };
+    return { communities, isNext }
   } catch (error) {
-    console.error("Error fetching communities:", error);
-    throw error;
+    console.error("Error fetching communities:", error)
+    throw error
   }
 }
 
@@ -278,20 +279,20 @@ export async function addMemberToCommunity(
       include: {
         members: true,
       },
-    });
+    })
     // Find the user by their unique id
-    const user = await fetchUser(memberId);
+    const user = await fetchUser(memberId)
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
 
     // Check if the user is already a member of the community
     if (community.membersIds.includes(user.id)) {
-      throw new Error("User is already a member of the community");
+      throw new Error("User is already a member of the community")
     }
 
     // Add the user's id to the members array in the community
@@ -316,7 +317,7 @@ export async function addMemberToCommunity(
           },
         },
       },
-    });
+    })
 
     // Add the community's id to the communities array in the user
     await prismadb.users.update({
@@ -340,29 +341,29 @@ export async function addMemberToCommunity(
           },
         },
       },
-    });
-    return community;
+    })
+    return community
   } catch (error) {
     // Handle any errors
-    console.error("Error adding member to community:", error);
-    throw error;
+    console.error("Error adding member to community:", error)
+    throw error
   }
 }
 
 export async function removeUserFromCommunity(cid: string, uid: string) {
   try {
-    const user = await fetchUser(uid);
-    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid)
+    const community = await fetchCommunityDetails(cid)
 
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
     if (!community.membersIds.includes(user.id)) {
-      throw new Error("User not member");
+      throw new Error("User not member")
     }
 
     await prismadb.communities.update({
@@ -381,7 +382,7 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
           },
         },
       },
-    });
+    })
 
     await prismadb.users.update({
       where: {
@@ -399,20 +400,20 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
           },
         },
       },
-    });
+    })
 
     if (
       community.createdById === user.id ||
       community.membersIds.length === 0
     ) {
-      await deleteCommunity(cid, "/communities/" + cid);
+      await deleteCommunity(cid, "/communities/" + cid)
     }
 
-    return { success: true };
+    return { success: true }
   } catch (error) {
     // Handle any errors
-    console.error("Error removing user from community:", error);
-    throw error;
+    console.error("Error removing user from community:", error)
+    throw error
   }
 }
 
@@ -423,11 +424,11 @@ export async function updateCommunityInfo({
   bio,
   joinMode,
 }: {
-  name: string;
-  cid: string;
-  image: string;
-  bio: string;
-  joinMode: string;
+  name: string
+  cid: string
+  image: string
+  bio: string
+  joinMode: string
 }) {
   try {
     const updatedCommunity = await prismadb.communities.update({
@@ -440,27 +441,27 @@ export async function updateCommunityInfo({
         bio,
         joinMode,
       },
-    });
+    })
 
     if (!updatedCommunity) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
 
-    return updatedCommunity;
+    return updatedCommunity
   } catch (error) {
     // Handle any errors
-    console.error("Error updating community information:", error);
-    throw error;
+    console.error("Error updating community information:", error)
+    throw error
   }
 }
 
 export async function deleteCommunity(cid: string, path: string) {
   try {
     // Find the community by its ID and delete it
-    const community = await fetchCommunityDetails(cid);
+    const community = await fetchCommunityDetails(cid)
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
 
     // Delete all threads associated with the community
@@ -469,58 +470,58 @@ export async function deleteCommunity(cid: string, path: string) {
       where: {
         communityId: community.id,
       },
-    });
+    })
 
     threads.forEach(async (thread) => {
-      await deleteThread(thread.id, path);
-    });
+      await deleteThread(thread.id, path)
+    })
 
     // Delete the community from the user's communities array
     community.members.forEach(async (member) => {
-      await removeUserFromCommunity(cid, member.uid);
-    });
+      await removeUserFromCommunity(cid, member.uid)
+    })
 
     // Delete the community
     const deletedCommunity = await prismadb.communities.delete({
       where: {
         cid: cid,
       },
-    });
+    })
 
-    revalidatePath("/");
-    return deletedCommunity;
+    revalidatePath("/")
+    return deletedCommunity
   } catch (error) {
-    console.error("Error deleting community: ", error);
-    throw error;
+    console.error("Error deleting community: ", error)
+    throw error
   }
 }
 
 export async function isCommunityMember(cid: string, id: string) {
   try {
-    const communities = await fetchCommunityDetails(cid);
+    const communities = await fetchCommunityDetails(cid)
 
     if (!communities) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
 
-    return !!communities.membersIds.includes(id);
+    return !!communities.membersIds.includes(id)
   } catch (error) {}
 }
 
 export async function inviteUserToCommunity(cid: string, uid: string) {
   try {
-    const community = await fetchCommunityDetails(cid);
-    const user = await fetchUser(uid);
+    const community = await fetchCommunityDetails(cid)
+    const user = await fetchUser(uid)
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
     if (community.invitesIds.includes(user.id))
-      throw new Error("User already invited");
+      throw new Error("User already invited")
     if (community.membersIds.includes(user.id))
-      throw new Error("User already member");
+      throw new Error("User already member")
 
     await prismadb.communities.update({
       where: {
@@ -533,7 +534,7 @@ export async function inviteUserToCommunity(cid: string, uid: string) {
           },
         },
       },
-    });
+    })
 
     await prismadb.users.update({
       where: {
@@ -546,30 +547,30 @@ export async function inviteUserToCommunity(cid: string, uid: string) {
           },
         },
       },
-    });
-    return { success: true };
+    })
+    return { success: true }
   } catch (error) {
-    console.error("Error inviting user to community: ", error);
-    throw error;
+    console.error("Error inviting user to community: ", error)
+    throw error
   }
 }
 
 export async function acceptUserRequest(cid: string, uid: string) {
   try {
-    const user = await fetchUser(uid);
-    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid)
+    const community = await fetchCommunityDetails(cid)
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
     if (!community.requestsIds.includes(user.id)) {
-      throw new Error("User not requested");
+      throw new Error("User not requested")
     }
     if (community.membersIds.includes(user.id)) {
-      throw new Error("User already member");
+      throw new Error("User already member")
     }
 
     // update community
@@ -584,7 +585,7 @@ export async function acceptUserRequest(cid: string, uid: string) {
           },
         },
       },
-    });
+    })
 
     // update user
     await prismadb.users.update({
@@ -598,34 +599,34 @@ export async function acceptUserRequest(cid: string, uid: string) {
           },
         },
       },
-    });
+    })
 
-    await addMemberToCommunity(cid, uid);
+    await addMemberToCommunity(cid, uid)
 
-    return { success: true };
+    return { success: true }
   } catch (error) {
-    console.error("Error accepting community request: ", error);
-    throw error;
+    console.error("Error accepting community request: ", error)
+    throw error
   }
 }
 
 // reject user request
 export async function rejectUserRequest(cid: string, uid: string) {
   try {
-    const user = await fetchUser(uid);
-    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid)
+    const community = await fetchCommunityDetails(cid)
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
     if (!community.requestsIds.includes(user.id)) {
-      throw new Error("User not requested");
+      throw new Error("User not requested")
     }
     if (community.membersIds.includes(user.id)) {
-      throw new Error("User already member");
+      throw new Error("User already member")
     }
 
     // update community
@@ -640,7 +641,7 @@ export async function rejectUserRequest(cid: string, uid: string) {
           },
         },
       },
-    });
+    })
 
     // update user
     await prismadb.users.update({
@@ -654,12 +655,12 @@ export async function rejectUserRequest(cid: string, uid: string) {
           },
         },
       },
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   } catch (error) {
-    console.error("Error rejecting community join request: ", error);
-    throw error;
+    console.error("Error rejecting community join request: ", error)
+    throw error
   }
 }
 
@@ -672,82 +673,82 @@ export async function fetchRequestedUsers(cid: string) {
       include: {
         requests: true,
       },
-    });
+    })
 
-    return requests.requests;
+    return requests.requests
   } catch (error) {
-    console.error("Error fetching community invites: ", error);
-    throw error;
+    console.error("Error fetching community invites: ", error)
+    throw error
   }
 }
 
 export async function isCommunityModerator(cid: string, uid: string) {
   try {
-    const user = await fetchUser(uid);
-    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid)
+    const community = await fetchCommunityDetails(cid)
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
 
-    return community.moderatorsIds.includes(user.id);
+    return community.moderatorsIds.includes(user.id)
   } catch (error) {
-    console.error("Error checking if user is moderator: ", error);
-    throw error;
+    console.error("Error checking if user is moderator: ", error)
+    throw error
   }
 }
 
 export async function isPendingRequest(cid: string, uid: string) {
   try {
-    const user = await fetchUser(uid);
-    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid)
+    const community = await fetchCommunityDetails(cid)
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
 
-    return community.requestsIds.includes(user.id);
+    return community.requestsIds.includes(user.id)
   } catch (error) {
-    console.error("Error checking if user is moderator: ", error);
-    throw error;
+    console.error("Error checking if user is moderator: ", error)
+    throw error
   }
 }
 
 export async function fetchModerators(cid: string) {
   try {
-    const community = await fetchCommunityDetails(cid);
+    const community = await fetchCommunityDetails(cid)
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
 
-    return community.moderators;
+    return community.moderators
   } catch (error) {
-    console.error("Error fetching moderators: ", error);
-    throw error;
+    console.error("Error fetching moderators: ", error)
+    throw error
   }
 }
 
 // add moderator
 export async function addModerator(cid: string, uid: string) {
   try {
-    const user = await fetchUser(uid);
-    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid)
+    const community = await fetchCommunityDetails(cid)
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
     if (community.moderatorsIds.includes(user.id)) {
-      throw new Error("User already moderator");
+      throw new Error("User already moderator")
     }
 
     await prismadb.communities.update({
@@ -761,29 +762,29 @@ export async function addModerator(cid: string, uid: string) {
           },
         },
       },
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   } catch (error) {
-    console.error("Error adding moderator: ", error);
-    throw error;
+    console.error("Error adding moderator: ", error)
+    throw error
   }
 }
 
 // remove moderator
 export async function removeModerator(cid: string, uid: string) {
   try {
-    const user = await fetchUser(uid);
-    const community = await fetchCommunityDetails(cid);
+    const user = await fetchUser(uid)
+    const community = await fetchCommunityDetails(cid)
 
     if (!community) {
-      throw new Error("Community not found");
+      throw new Error("Community not found")
     }
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found")
     }
     if (!community.moderatorsIds.includes(user.id)) {
-      throw new Error("User not moderator");
+      throw new Error("User not moderator")
     }
 
     await prismadb.communities.update({
@@ -797,11 +798,11 @@ export async function removeModerator(cid: string, uid: string) {
           },
         },
       },
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   } catch (error) {
-    console.error("Error removing moderator: ", error);
-    throw error;
+    console.error("Error removing moderator: ", error)
+    throw error
   }
 }
