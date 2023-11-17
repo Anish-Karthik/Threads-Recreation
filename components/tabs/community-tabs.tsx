@@ -6,15 +6,18 @@ import { communityTabs } from "@/constants"
 import { useAuth } from "@clerk/nextjs"
 import { communities, users } from "@prisma/client"
 
+import { fetchCommunityPosts } from "@/lib/actions/community.actions"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import UserCard from "@/components/cards/UserCard"
 import ThreadsTab from "@/components/shared/ThreadsTab"
 
 const CommunityTabs = ({
+  result,
   communityDetails,
   isModerator,
   joinRequests,
 }: {
+  result: Awaited<ReturnType<typeof fetchCommunityPosts>>
   communityDetails: communities & { members: users[]; createdBy: users }
   isModerator: boolean
   joinRequests: users[]
@@ -49,6 +52,7 @@ const CommunityTabs = ({
 
       <TabsContent value={"threads"} className="w-full text-light-1">
         <ThreadsTab
+          result={result}
           currentUserId={userId}
           accountId={communityDetails.cid}
           accountType="Community"

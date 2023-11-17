@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation"
 import { currentUser } from "@clerk/nextjs"
 
-import { fetchCommunityDetails } from "@/lib/actions/community.actions"
 import CreateCommunity from "@/components/forms/CreateCommunity"
 import { serverClient } from "@/app/_trpc/serverClient"
 

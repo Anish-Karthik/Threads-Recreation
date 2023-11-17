@@ -22,6 +22,9 @@ const CommunityPage = async ({ params }: { params: { id: string } }) => {
   const joinRequests = communityDetails.requests
   const pendingRequest = communityDetails.requestsIds.includes(userInfo.id)
 
+  const result = await serverClient.community.thread.getAll(
+    communityDetails.cid
+  )
   return (
     <section>
       <ProfileHeader
@@ -40,6 +43,7 @@ const CommunityPage = async ({ params }: { params: { id: string } }) => {
 
       <div className="mt-9">
         <CommunityTabs
+          result={result}
           communityDetails={communityDetails}
           isModerator={isModerator}
           joinRequests={joinRequests}

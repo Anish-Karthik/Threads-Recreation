@@ -6,14 +6,17 @@ import { profileTabs } from "@/constants"
 import { useAuth } from "@clerk/nextjs"
 import { communities, users } from "@prisma/client"
 
+import { fetchUserPosts } from "@/lib/actions/user.actions"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import UserCard from "@/components/cards/UserCard"
 import ThreadsTab from "@/components/shared/ThreadsTab"
 
 const ProfileTabs = ({
+  result,
   userInfo,
   communityInvites,
 }: {
+  result: Awaited<ReturnType<typeof fetchUserPosts>>
   userInfo: users & { communities: communities[] }
   communityInvites: communities[]
 }) => {
@@ -53,6 +56,7 @@ const ProfileTabs = ({
         className="w-full text-light-1"
       >
         <ThreadsTab
+          result={result}
           currentUserId={userId}
           accountId={userInfo.uid}
           accountType="User"

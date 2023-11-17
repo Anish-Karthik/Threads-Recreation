@@ -1,12 +1,14 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@clerk/nextjs"
 import toast from "react-hot-toast"
 
 import { toggleLikeThread } from "@/lib/actions/thread.actions"
+import { debounceLike } from "@/lib/utils"
+import { trpc } from "@/app/_trpc/client"
 
 interface LikeThreadProps {
   isLiked: boolean
@@ -29,15 +31,20 @@ const LikeThread = ({
   })
   const user = useAuth()
   const router = useRouter()
+  const toggleLikeThreadHook = trpc.thread.toggleLike.useMutation()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const toggleLike = useCallback(
+    debounceLike(toggleLikeThreadHook.mutateAsync, 2000),
+    []
+  )
   const toggleHeart = async () => {
     if (!user || !user.userId) return router.push("/sign-in")
     try {
-      const result = await toggleLikeThread(threadId, userId, path)
-      if (!result) {
-        toast.error("Something went wrong")
-        return
-      }
-      setLike(result)
+      toggleLike({ threadId, userId, path })
+      setLike((prev) => ({
+        isLiked: !prev.isLiked,
+        likes: prev.isLiked ? prev.likes - 1 : prev.likes + 1,
+      }))
     } catch (error) {
       toast.error("Something went wrong")
     }

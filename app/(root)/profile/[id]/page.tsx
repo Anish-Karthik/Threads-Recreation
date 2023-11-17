@@ -1,12 +1,7 @@
-import Image from "next/image"
 import { redirect } from "next/navigation"
-import { profileTabs } from "@/constants"
 import { currentUser } from "@clerk/nextjs"
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import UserCard from "@/components/cards/UserCard"
 import ProfileHeader from "@/components/shared/ProfileHeader"
-import ThreadsTab from "@/components/shared/ThreadsTab"
 import ProfileTabs from "@/components/tabs/profile-tabs"
 import { serverClient } from "@/app/_trpc/serverClient"
 
@@ -35,6 +30,8 @@ const ProfilePage = async ({ params }: { params: { id: string } }) => {
     (community) => !currentUserCommunities.has(community)
   )
 
+  const result = await serverClient.user.thread.getAll(userInfo.uid)
+
   return (
     <section>
       <ProfileHeader
@@ -50,6 +47,7 @@ const ProfilePage = async ({ params }: { params: { id: string } }) => {
       {/* user.id !== userInfo.uid */}
       <div className="mt-9">
         <ProfileTabs
+          result={result}
           userInfo={visitingUser}
           communityInvites={communityInvites}
         />

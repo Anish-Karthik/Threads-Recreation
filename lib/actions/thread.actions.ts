@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache"
+import { threads, users } from "@prisma/client"
 
 import db from "@/lib/db"
 
@@ -96,7 +97,11 @@ export async function createThread({
   }
 }
 
-export async function fetchThreads(pageNumber = 1, pageSize = 20) {
+export async function fetchThreads(
+  pageNumber: number = 1,
+  pageSize: number = 20,
+  includeCommunity: boolean = true
+) {
   try {
     //  calc skips
     const skipAmount = (pageNumber - 1) * pageSize
@@ -112,6 +117,13 @@ export async function fetchThreads(pageNumber = 1, pageSize = 20) {
             author: true,
           },
         },
+        community: includeCommunity
+          ? {
+              include: {
+                threads: true,
+              },
+            }
+          : false,
       },
       orderBy: {
         createdAt: "desc",
@@ -134,7 +146,10 @@ export async function fetchThreads(pageNumber = 1, pageSize = 20) {
   } catch (error) {}
 }
 
-export async function fetchThreadById(id: string) {
+export async function fetchThreadById(
+  id: string,
+  includeCommunity: boolean = true
+) {
   try {
     const thread = await db.threads.findUnique({
       where: {
@@ -145,7 +160,13 @@ export async function fetchThreadById(id: string) {
         children: {
           include: {
             author: true,
-            community: true,
+            community: includeCommunity
+              ? {
+                  include: {
+                    threads: true,
+                  },
+                }
+              : false,
             children: {
               include: {
                 author: true,
@@ -153,7 +174,13 @@ export async function fetchThreadById(id: string) {
             },
           },
         },
-        community: true,
+        community: includeCommunity
+          ? {
+              include: {
+                threads: true,
+              },
+            }
+          : true,
         likedBy: true,
       },
     })
@@ -370,27 +397,18 @@ export async function toggleLikeThread(
   path: string
 ) {
   try {
-    const thread = await fetchThreadById(threadId)
-    // await User.updateMany({}, {$set: {likedThreads: []}})
-    // await Thread.updateMany({}, {$set: {likes: []}})
-
-    if (!thread) {
-      throw new Error("Thread not found")
-    }
-    // add the thread to the user's likedThreads
+    console.log("toggle like")
+    // implement this toggleLikeThread function as efficient as possible and reduce as much db calls as possible
     const user = await fetchUser(userId)
-
     if (!user) {
       throw new Error("User not found")
     }
-    const like = {
-      isLiked: false,
-      likes: thread.likedByIds.length,
-    }
-    if (user.likedThreads.map((thread) => thread.id).includes(threadId)) {
-      await db.users.update({
+    let res: users
+    const isLiked = user.likedThreadIds.includes(threadId)
+    if (isLiked) {
+      res = await db.users.update({
         where: {
-          uid: userId,
+          id: user.id,
         },
         data: {
           likedThreads: {
@@ -400,23 +418,10 @@ export async function toggleLikeThread(
           },
         },
       })
-      await db.threads.update({
-        where: {
-          id: threadId,
-        },
-        data: {
-          likedBy: {
-            disconnect: {
-              id: user.id,
-            },
-          },
-        },
-      })
-      like.likes -= 1
     } else {
-      await db.users.update({
+      res = await db.users.update({
         where: {
-          uid: userId,
+          id: user.id,
         },
         data: {
           likedThreads: {
@@ -426,23 +431,9 @@ export async function toggleLikeThread(
           },
         },
       })
-      await db.threads.update({
-        where: {
-          id: threadId,
-        },
-        data: {
-          likedBy: {
-            connect: {
-              id: user.id,
-            },
-          },
-        },
-      })
-      like.isLiked = true
-      like.likes += 1
     }
+
     revalidatePath(path)
-    return like
   } catch (error: any) {
     console.error(`Failed to fetch thread: ${error.message}`)
   }

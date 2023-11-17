@@ -88,23 +88,30 @@ export async function fetchUserPosts(userId: string) {
         uid: userId,
       },
       include: {
-        communities: true,
-        likedThreads: true,
         threads: {
           include: {
             children: {
               include: {
+                community: {
+                  include: {
+                    threads: true,
+                  },
+                },
                 author: true,
               },
             },
-            community: true,
+            community: {
+              include: {
+                threads: true,
+              },
+            },
             author: true,
           },
         },
       },
     })
 
-    return threads
+    return threads?.threads || []
   } catch (error: any) {
     throw new Error(`Failed to fetch user posts: ${error.message}`)
   }

@@ -24,7 +24,7 @@ export default function DeleteEntity({
 }: {
   id: string
   type: "Thread" | "Community" | "User"
-  deleteCallback: any
+  deleteCallback: (id: string, path: string) => Promise<void>
 }) {
   const pathname = usePathname()
   const router = useRouter()

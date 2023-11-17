@@ -1,6 +1,8 @@
 import { currentUser } from "@clerk/nextjs"
+import { communities, threads } from "@prisma/client"
 
 import { fetchThreads } from "@/lib/actions/thread.actions"
+import { fetchUser } from "@/lib/actions/user.actions"
 import ThreadCard from "@/components/cards/ThreadCard"
 import Pagination from "@/components/shared/Pagination"
 import Searchbar from "@/components/shared/Searchbar"
@@ -10,8 +12,9 @@ export default async function Home({
 }: {
   searchParams: { [key: string]: string | undefined }
 }) {
-  const results = await fetchThreads(1, 25)
+  const results = await fetchThreads(1, 25, true)
   const user = await currentUser()
+  const userInfo = await fetchUser(user?.id || "")
 
   return (
     <div>
@@ -37,7 +40,12 @@ export default async function Home({
                     comments={post.children}
                     content={post.text}
                     author={post.author}
-                    community={post.communityId}
+                    communityDetails={
+                      post.community as communities & { threads: threads[] }
+                    }
+                    likeCount={post.likedByIds.length}
+                    userInfo={userInfo}
+                    isLiked={userInfo?.likedThreadIds.includes(post.id)}
                     createdAt={post.createdAt.toDateString()}
                   />
                 )

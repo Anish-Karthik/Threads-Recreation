@@ -26,7 +26,7 @@ import { Form } from "../ui/form"
 const positiveActions = new Set(["Invite", "Join", "Accept", "Promote"])
 const negativeActions = new Set(["Leave", "Reject", "Remove", "Demote"])
 
-type props = {
+export type JoinOrLeaveProps = {
   communityId: string
   memberId: string
   onActionCallback: any
@@ -51,7 +51,7 @@ const JoinOrLeave = ({
   isMember,
   action,
   notJoinedCommunities = [],
-}: props) => {
+}: JoinOrLeaveProps) => {
   const pathname = usePathname()
   const router = useRouter()
   const [isSubmiting, setIsSubmiting] = useState(false)

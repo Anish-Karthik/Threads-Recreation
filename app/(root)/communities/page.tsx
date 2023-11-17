@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { PlusCircleIcon } from "lucide-react"
 
-import { fetchCommunities } from "@/lib/actions/community.actions"
 import { Button } from "@/components/ui/button"
 import CommunityCard from "@/components/cards/CommunityCard"
 import Pagination from "@/components/shared/Pagination"

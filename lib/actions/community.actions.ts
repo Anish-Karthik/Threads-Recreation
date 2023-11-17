@@ -161,18 +161,28 @@ export async function fetchCommunityPosts(id: string) {
       include: {
         threads: {
           include: {
-            author: true,
             children: {
               include: {
+                community: {
+                  include: {
+                    threads: true,
+                  },
+                },
                 author: true,
               },
             },
+            community: {
+              include: {
+                threads: true,
+              },
+            },
+            author: true,
           },
         },
       },
     })
 
-    return communityPosts
+    return communityPosts?.threads || []
   } catch (error) {
     // Handle any errors
     console.error("Error fetching community posts:", error)

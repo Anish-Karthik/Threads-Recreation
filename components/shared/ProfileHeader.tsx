@@ -1,13 +1,10 @@
+"use client"
+
+import { memo, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
-import {
-  addMemberToCommunity,
-  deleteCommunity,
-  inviteUserToCommunity,
-  removeUserFromCommunity,
-} from "@/lib/actions/community.actions"
-import { deleteUser, requestToJoinCommunity } from "@/lib/actions/user.actions"
+import { trpc } from "@/app/_trpc/client"
 
 import DeleteEntity from "../forms/DeleteEntity"
 import JoinOrLeave from "../thread-actions/JoinOrLeave"
@@ -41,6 +38,52 @@ const ProfileHeader = ({
   notJoinedCommunities = [],
   joinMode = "open",
 }: ProfileHeaderProps) => {
+  const addMemberToCommunityHook = trpc.community.user.add.useMutation()
+  const deleteCommunityHook = trpc.community.delete.useMutation()
+  const inviteUserToCommunityHook = trpc.community.user.invite.useMutation()
+  const removeUserFromCommunityHook = trpc.community.user.remove.useMutation()
+  const deleteUserHook = trpc.user.delete.useMutation()
+  const requestToJoinCommunityHook = trpc.user.community.request.useMutation()
+
+  const addMemberToCommunity = useCallback(
+    async (communityId: string, memberId: string) => {
+      await addMemberToCommunityHook.mutateAsync({ communityId, memberId })
+    },
+    [addMemberToCommunityHook]
+  )
+
+  const deleteCommunity = useCallback(
+    async (cid: string, path: string) => {
+      await deleteCommunityHook.mutateAsync({ cid, path })
+    },
+    [deleteCommunityHook]
+  )
+
+  const inviteUserToCommunity = useCallback(
+    async (cid: string, uid: string) => {
+      await inviteUserToCommunityHook.mutateAsync({ cid, uid })
+    },
+    [inviteUserToCommunityHook]
+  )
+  const removeUserFromCommunity = useCallback(
+    async (cid: string, uid: string) => {
+      await removeUserFromCommunityHook.mutateAsync({ cid, uid })
+    },
+    [removeUserFromCommunityHook]
+  )
+  const deleteUser = useCallback(
+    async (uid: string, path: string) => {
+      await deleteUserHook.mutateAsync({ uid, path })
+    },
+    [deleteUserHook]
+  )
+  const requestToJoinCommunity = useCallback(
+    async (cid: string, uid: string) => {
+      await requestToJoinCommunityHook.mutateAsync({ cid, uid })
+    },
+    [requestToJoinCommunityHook]
+  )
+
   return (
     <section className="flex w-full flex-col justify-start">
       <div className="flex items-center justify-between">

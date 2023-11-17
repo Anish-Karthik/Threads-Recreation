@@ -1,14 +1,12 @@
+"use client"
+
+import { useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { communities, threads, users } from "@prisma/client"
 
-import { fetchCommunityDetailsById } from "@/lib/actions/community.actions"
-import {
-  deleteThread,
-  fetchLikeCount,
-  isLikedThread,
-} from "@/lib/actions/thread.actions"
-import { fetchUser } from "@/lib/actions/user.actions"
 import { cn, formatDateString } from "@/lib/utils"
+import { trpc } from "@/app/_trpc/client"
 
 import DeleteEntity from "../forms/DeleteEntity"
 import Content from "../shared/content"
@@ -16,44 +14,41 @@ import LikeThread from "../thread-actions/LikeThread"
 import ShareThread from "../thread-actions/ShareThread"
 
 interface ThreadCardProps {
-  key: string
   id: string
   currentUserId: string
   parentId: string | null
   content: string
-  author: {
-    uid: string
-    id: string
-    image: string
-    name: string
-  }
-  community: string | null
+  author: users
+  communityDetails: communities & { threads: threads[] }
   createdAt: string
-  comments: {
-    author: {
-      image: string
-    }
-  }[]
+  comments: (threads & { author: users })[]
   isComment?: boolean
+  isLiked?: boolean
+  likeCount: number
+  userInfo: users
 }
 
-const ThreadCard = async ({
-  key,
+const ThreadCard = ({
   id,
   currentUserId,
   parentId,
   content,
   author,
-  community,
+  communityDetails,
   createdAt,
   comments,
   isComment,
+  likeCount,
+  userInfo,
+  isLiked = false,
 }: ThreadCardProps) => {
-  const communityDetails = await fetchCommunityDetailsById(community || "")
-  const likeCount = await fetchLikeCount(id)
-  const userInfo = await fetchUser(currentUserId)
-  const isLiked = userInfo ? await isLikedThread(id, currentUserId) : false
-
+  const deleteThreadHook = trpc.thread.delete.useMutation()
+  const deleteThread = useCallback(
+    async (threadId: string, path: string) => {
+      await deleteThreadHook.mutateAsync({ threadId, path })
+    },
+    [deleteThreadHook]
+  )
   return (
     <article
       className={cn(
@@ -88,8 +83,7 @@ const ThreadCard = async ({
               </Link>
 
               {((currentUserId && currentUserId == author.uid) ||
-                (community &&
-                  communityDetails &&
+                (communityDetails &&
                   communityDetails.moderatorsIds.includes(userInfo?.id))) && (
                 <div className="flex gap-2">
                   <DeleteEntity
@@ -175,7 +169,7 @@ const ThreadCard = async ({
           </div>
         </div>
       </div>
-      {!isComment && community && communityDetails && (
+      {!isComment && communityDetails && (
         <Link
           href={`/communities/${communityDetails.cid}`}
           className="mt-5 flex items-center"
