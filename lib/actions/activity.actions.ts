@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import prismadb from "./prismadb"
+import db from "@/lib/db"
 
 export async function getActivityRepliedToUser(userId: string) {
   try {
@@ -10,7 +10,7 @@ export async function getActivityRepliedToUser(userId: string) {
 
     // find all threads and comments by user
 
-    const userThreads = await prismadb.threads.findMany({
+    const userThreads = await db.threads.findMany({
       where: {
         authorId: userId,
       },
@@ -30,7 +30,7 @@ export async function getActivityRepliedToUser(userId: string) {
       })
       .flat()
 
-    const replies = await prismadb.threads.findMany({
+    const replies = await db.threads.findMany({
       where: {
         id: { in: childThreadIds },
       },
@@ -64,7 +64,7 @@ export async function getActivityLikedToUser(userId: string) {
       throw new Error("User not found")
     }
 
-    let likedThreads = await prismadb.users.findUnique({
+    let likedThreads = await db.users.findUnique({
       where: {
         id: userId,
       },
@@ -99,7 +99,7 @@ export async function getActivityLikedByUser(userId: string) {
   try {
     // find threads whose parent is not null, ans select only parentThreads
     const likedThreadIds = (
-      await prismadb.threads.findMany({
+      await db.threads.findMany({
         where: {
           authorId: userId,
           parentId: null,
@@ -110,7 +110,7 @@ export async function getActivityLikedByUser(userId: string) {
       })
     ).map((thread) => thread.id)
 
-    const liked = await prismadb.threads.findMany({
+    const liked = await db.threads.findMany({
       where: {
         id: { in: likedThreadIds },
       },

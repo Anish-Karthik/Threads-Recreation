@@ -11,6 +11,7 @@ import {
   Topbar,
 } from "@/components/shared/"
 import { ToasterProvider } from "@/components/shared/ToastProvider"
+
 import TRPCProvider from "../_trpc/Provider"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -28,22 +29,22 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <TRPCProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <ToasterProvider />
-          <Topbar />
-          <main className="flex flex-row">
-            <LeftSidebar />
+        <html lang="en">
+          <body className={inter.className}>
+            <ToasterProvider />
+            <Topbar />
+            <main className="flex flex-row">
+              <LeftSidebar />
 
-            <section className="main-container">
-              <div className="w-full max-w-4xl">{children}</div>
-            </section>
+              <section className="main-container">
+                <div className="w-full max-w-4xl">{children}</div>
+              </section>
 
-            <RightSidebar />
-          </main>
-          <Bottombar />
-        </body>
-      </html>
+              <RightSidebar />
+            </main>
+            <Bottombar />
+          </body>
+        </html>
       </TRPCProvider>
     </ClerkProvider>
   )

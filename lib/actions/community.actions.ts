@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 
-import prismadb from "./prismadb"
+import db from "@/lib/db"
+
 import { deleteThread } from "./thread.actions"
 import { fetchUser } from "./user.actions"
 
@@ -10,7 +11,7 @@ type SortOrder = "asc" | "desc"
 
 export async function isAlreadyCommunity(cid: string) {
   try {
-    const community = await prismadb.communities.findUnique({
+    const community = await db.communities.findUnique({
       where: {
         cid: cid,
       },
@@ -49,7 +50,7 @@ export async function createCommunity({
       throw new Error("Community with this cid already exists") // Handle the case if the user with the id is not found
     }
 
-    const newCommunity = await prismadb.communities.create({
+    const newCommunity = await db.communities.create({
       data: {
         name,
         cid,
@@ -71,7 +72,7 @@ export async function createCommunity({
     })
 
     // Update User model
-    await prismadb.users.update({
+    await db.users.update({
       where: {
         id: user.id,
       },
@@ -106,7 +107,7 @@ export async function fetchCommunityDetails(id: string | null) {
   try {
     if (!id) return null
 
-    const communityDetails = await prismadb.communities.findUnique({
+    const communityDetails = await db.communities.findUnique({
       where: {
         cid: id,
       },
@@ -131,7 +132,7 @@ export async function fetchCommunityDetailsById(id: string | null) {
   try {
     if (!id) return null
 
-    const communityDetails = await prismadb.communities.findUnique({
+    const communityDetails = await db.communities.findUnique({
       where: {
         id: id,
       },
@@ -155,7 +156,7 @@ export async function fetchCommunityDetailsById(id: string | null) {
 
 export async function fetchCommunityPosts(id: string) {
   try {
-    const communityPosts = await prismadb.communities.findUnique({
+    const communityPosts = await db.communities.findUnique({
       where: {
         cid: id,
       },
@@ -235,7 +236,7 @@ export async function fetchCommunities({
     // Define the sort options for the fetched communities based on createdAt field and provided sort order.
     const sortOptions = { createdAt: sortBy }
 
-    const communities = await prismadb.communities.findMany({
+    const communities = await db.communities.findMany({
       where: {
         ...query,
       },
@@ -250,7 +251,7 @@ export async function fetchCommunities({
     })
 
     // Count the total number of communities that match the search criteria (without pagination).
-    const totalCommunitiesCount = await prismadb.communities.count({
+    const totalCommunitiesCount = await db.communities.count({
       where: {
         ...query,
       },
@@ -272,7 +273,7 @@ export async function addMemberToCommunity(
 ) {
   try {
     // Find the community by its unique id
-    const community = await prismadb.communities.findUnique({
+    const community = await db.communities.findUnique({
       where: {
         cid: communityId,
       },
@@ -296,7 +297,7 @@ export async function addMemberToCommunity(
     }
 
     // Add the user's id to the members array in the community
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: communityId,
       },
@@ -320,7 +321,7 @@ export async function addMemberToCommunity(
     })
 
     // Add the community's id to the communities array in the user
-    await prismadb.users.update({
+    await db.users.update({
       where: {
         uid: memberId,
       },
@@ -366,7 +367,7 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
       throw new Error("User not member")
     }
 
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },
@@ -384,7 +385,7 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
       },
     })
 
-    await prismadb.users.update({
+    await db.users.update({
       where: {
         uid: uid,
       },
@@ -431,7 +432,7 @@ export async function updateCommunityInfo({
   joinMode: string
 }) {
   try {
-    const updatedCommunity = await prismadb.communities.update({
+    const updatedCommunity = await db.communities.update({
       where: {
         cid: cid,
       },
@@ -466,7 +467,7 @@ export async function deleteCommunity(cid: string, path: string) {
 
     // Delete all threads associated with the community
     // TODO: Optimize this to delete by pagination instead of all at once (if there are a lot of threads)
-    const threads = await prismadb.threads.findMany({
+    const threads = await db.threads.findMany({
       where: {
         communityId: community.id,
       },
@@ -482,7 +483,7 @@ export async function deleteCommunity(cid: string, path: string) {
     })
 
     // Delete the community
-    const deletedCommunity = await prismadb.communities.delete({
+    const deletedCommunity = await db.communities.delete({
       where: {
         cid: cid,
       },
@@ -523,7 +524,7 @@ export async function inviteUserToCommunity(cid: string, uid: string) {
     if (community.membersIds.includes(user.id))
       throw new Error("User already member")
 
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },
@@ -536,7 +537,7 @@ export async function inviteUserToCommunity(cid: string, uid: string) {
       },
     })
 
-    await prismadb.users.update({
+    await db.users.update({
       where: {
         uid: uid,
       },
@@ -574,7 +575,7 @@ export async function acceptUserRequest(cid: string, uid: string) {
     }
 
     // update community
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },
@@ -588,7 +589,7 @@ export async function acceptUserRequest(cid: string, uid: string) {
     })
 
     // update user
-    await prismadb.users.update({
+    await db.users.update({
       where: {
         uid: uid,
       },
@@ -630,7 +631,7 @@ export async function rejectUserRequest(cid: string, uid: string) {
     }
 
     // update community
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },
@@ -644,7 +645,7 @@ export async function rejectUserRequest(cid: string, uid: string) {
     })
 
     // update user
-    await prismadb.users.update({
+    await db.users.update({
       where: {
         uid: uid,
       },
@@ -666,7 +667,7 @@ export async function rejectUserRequest(cid: string, uid: string) {
 
 export async function fetchRequestedUsers(cid: string) {
   try {
-    const requests = await prismadb.communities.findUnique({
+    const requests = await db.communities.findUnique({
       where: {
         cid: cid,
       },
@@ -751,7 +752,7 @@ export async function addModerator(cid: string, uid: string) {
       throw new Error("User already moderator")
     }
 
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },
@@ -787,7 +788,7 @@ export async function removeModerator(cid: string, uid: string) {
       throw new Error("User not moderator")
     }
 
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },

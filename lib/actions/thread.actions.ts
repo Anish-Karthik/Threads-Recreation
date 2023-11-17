@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 
-import prismadb from "./prismadb"
+import db from "@/lib/db"
+
 import { fetchUser } from "./user.actions"
 
 interface ThreadProps {
@@ -28,7 +29,7 @@ export async function createThread({
     if (!author) {
       throw new Error("No author provided")
     }
-    const communityIdObject = await prismadb.communities.findUnique({
+    const communityIdObject = await db.communities.findUnique({
       where: {
         cid: communityId || "",
       },
@@ -38,7 +39,7 @@ export async function createThread({
       },
     })
 
-    const createdThread = await prismadb.threads.create({
+    const createdThread = await db.threads.create({
       data: {
         text,
         authorId: author,
@@ -51,7 +52,7 @@ export async function createThread({
       throw new Error("Failed to create thread")
     }
 
-    const user = await prismadb.users.findUnique({
+    const user = await db.users.findUnique({
       where: {
         id: author,
       },
@@ -63,7 +64,7 @@ export async function createThread({
       throw new Error("User not found")
     }
 
-    await prismadb.users.update({
+    await db.users.update({
       where: {
         id: author,
       },
@@ -77,7 +78,7 @@ export async function createThread({
     })
 
     if (communityIdObject) {
-      await prismadb.communities.update({
+      await db.communities.update({
         where: {
           cid: communityIdObject.cid,
         },
@@ -102,7 +103,7 @@ export async function fetchThreads(pageNumber = 1, pageSize = 20) {
     //  calc skips
     const skipAmount = (pageNumber - 1) * pageSize
 
-    const threadsQuery = await prismadb.threads.findMany({
+    const threadsQuery = await db.threads.findMany({
       where: {
         parentId: undefined,
       },
@@ -123,7 +124,7 @@ export async function fetchThreads(pageNumber = 1, pageSize = 20) {
 
     const posts = threadsQuery
 
-    const totalThreadsCount = await prismadb.threads.count({
+    const totalThreadsCount = await db.threads.count({
       where: {
         parentId: undefined,
       },
@@ -137,7 +138,7 @@ export async function fetchThreads(pageNumber = 1, pageSize = 20) {
 
 export async function fetchThreadById(id: string) {
   try {
-    const thread = await prismadb.threads.findUnique({
+    const thread = await db.threads.findUnique({
       where: {
         id,
       },
@@ -173,7 +174,7 @@ export async function addCommentToThread({
   path,
 }: addCommentToThreadProps) {
   try {
-    const originalThread = await prismadb.threads.findUnique({
+    const originalThread = await db.threads.findUnique({
       where: {
         id: threadId,
       },
@@ -185,7 +186,7 @@ export async function addCommentToThread({
     if (!originalThread) {
       throw new Error("Thread not found")
     }
-    const newComment = await prismadb.threads.create({
+    const newComment = await db.threads.create({
       data: {
         text: commentText,
         authorId: userId,
@@ -198,7 +199,7 @@ export async function addCommentToThread({
 
     // Update Thread model in prisma
 
-    await prismadb.threads.update({
+    await db.threads.update({
       where: {
         id: threadId,
       },
@@ -224,7 +225,7 @@ export async function deleteThread(threadId: string, path: string) {
     }
 
     const deleteChildren = async (threadId: string) => {
-      const thread = await prismadb.threads.findUnique({
+      const thread = await db.threads.findUnique({
         where: {
           id: threadId,
         },
@@ -241,7 +242,7 @@ export async function deleteThread(threadId: string, path: string) {
           await deleteChildren(child.id)
         }
       }
-      await prismadb.threads.update({
+      await db.threads.update({
         where: {
           id: thread.id,
         },
@@ -262,7 +263,7 @@ export async function deleteThread(threadId: string, path: string) {
 
       if (thread.likedByIds.length > 0) {
         for (const userId of thread.likedByIds) {
-          await prismadb.users.update({
+          await db.users.update({
             where: {
               id: userId,
             },
@@ -276,7 +277,7 @@ export async function deleteThread(threadId: string, path: string) {
           })
         }
       }
-      await prismadb.threads.delete({
+      await db.threads.delete({
         where: {
           id: thread.id,
         },
@@ -284,7 +285,7 @@ export async function deleteThread(threadId: string, path: string) {
 
       const communityId = thread.communityId
       if (communityId) {
-        await prismadb.communities.update({
+        await db.communities.update({
           where: {
             id: communityId,
           },
@@ -316,7 +317,7 @@ export async function editThread({
   path: string
 }) {
   try {
-    const thread = await prismadb.threads.update({
+    const thread = await db.threads.update({
       where: {
         id: threadId,
       },
@@ -343,7 +344,7 @@ export async function fetchLikedThreads(userId: string) {
       throw new Error("User not found")
     }
 
-    const likedThreads = await prismadb.threads.findMany({
+    const likedThreads = await db.threads.findMany({
       where: {
         id: {
           in: user.likedThreads.map((thread) => thread.id),
@@ -389,7 +390,7 @@ export async function toggleLikeThread(
       likes: thread.likedByIds.length,
     }
     if (user.likedThreads.map((thread) => thread.id).includes(threadId)) {
-      await prismadb.users.update({
+      await db.users.update({
         where: {
           uid: userId,
         },
@@ -401,7 +402,7 @@ export async function toggleLikeThread(
           },
         },
       })
-      await prismadb.threads.update({
+      await db.threads.update({
         where: {
           id: threadId,
         },
@@ -415,7 +416,7 @@ export async function toggleLikeThread(
       })
       like.likes -= 1
     } else {
-      await prismadb.users.update({
+      await db.users.update({
         where: {
           uid: userId,
         },
@@ -427,7 +428,7 @@ export async function toggleLikeThread(
           },
         },
       })
-      await prismadb.threads.update({
+      await db.threads.update({
         where: {
           id: threadId,
         },

@@ -2,13 +2,14 @@
 
 import { revalidatePath } from "next/cache"
 
+import db from "@/lib/db"
+
 import { getActivityLikedByUser } from "./activity.actions"
 import {
   addMemberToCommunity,
   deleteCommunity,
   fetchCommunityDetails,
 } from "./community.actions"
-import prismadb from "./prismadb"
 import { deleteThread } from "./thread.actions"
 
 type UpdateUserProps = {
@@ -29,7 +30,7 @@ export async function updateUser({
   path,
 }: UpdateUserProps): Promise<void> {
   try {
-    await prismadb.users.upsert({
+    await db.users.upsert({
       where: {
         uid: userId,
       },
@@ -63,7 +64,7 @@ export async function updateUser({
 
 export async function fetchUser(userId: string) {
   try {
-    return await prismadb.users.findUnique({
+    return await db.users.findUnique({
       where: {
         uid: userId,
       },
@@ -84,7 +85,7 @@ export async function fetchUser(userId: string) {
 
 export async function fetchUserPosts(userId: string) {
   try {
-    const threads = await prismadb.users.findUnique({
+    const threads = await db.users.findUnique({
       where: {
         uid: userId,
       },
@@ -167,7 +168,7 @@ export async function fetchUsers({
       },
     }
 
-    const users = await prismadb.users.findMany({
+    const users = await db.users.findMany({
       where: query as typeof query,
       select: {
         uid: true,
@@ -183,7 +184,7 @@ export async function fetchUsers({
     })
 
     // const totalUsersCount = await User.countDocuments(query);
-    const totalUsersCount = await prismadb.users.count({
+    const totalUsersCount = await db.users.count({
       where: query,
     })
 
@@ -202,7 +203,7 @@ export async function deleteUser(uid: string, path: string) {
     }
     // Delete user's threads
     // TODO: Optimize this with group by get and delete, using skip
-    const userThreads = await prismadb.threads.findMany({
+    const userThreads = await db.threads.findMany({
       where: {
         authorId: user.id,
       },
@@ -214,7 +215,7 @@ export async function deleteUser(uid: string, path: string) {
     // Delete user's liked threads
     const userLikedThreads = await getActivityLikedByUser(user.id)
     userLikedThreads.forEach(async (thread) => {
-      await prismadb.threads.update({
+      await db.threads.update({
         where: {
           id: thread.id,
         },
@@ -229,7 +230,7 @@ export async function deleteUser(uid: string, path: string) {
     })
 
     // TODO: Delete user created communities if no other moderators
-    const userCreatedCommunities = await prismadb.communities.findMany({
+    const userCreatedCommunities = await db.communities.findMany({
       where: {
         createdById: user.id,
       },
@@ -240,7 +241,7 @@ export async function deleteUser(uid: string, path: string) {
     })
 
     // Delete user
-    await prismadb.users.delete({
+    await db.users.delete({
       where: {
         uid,
       },
@@ -254,7 +255,7 @@ export async function deleteUser(uid: string, path: string) {
 
 export async function fetchInvitedCommunities(uid: string) {
   try {
-    const invites = await prismadb.users.findUnique({
+    const invites = await db.users.findUnique({
       where: {
         uid: uid,
       },
@@ -290,7 +291,7 @@ export async function requestToJoinCommunity(cid: string, uid: string) {
       throw new Error("Already a member")
     }
 
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },
@@ -322,7 +323,7 @@ export async function acceptCommunityInvite(cid: string, uid: string) {
       throw new Error("User not found")
     }
 
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },
@@ -335,7 +336,7 @@ export async function acceptCommunityInvite(cid: string, uid: string) {
       },
     })
 
-    await prismadb.users.update({
+    await db.users.update({
       where: {
         uid: uid,
       },
@@ -370,7 +371,7 @@ export async function rejectCommunityInvite(cid: string, uid: string) {
       throw new Error("User not found")
     }
 
-    await prismadb.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },
@@ -383,7 +384,7 @@ export async function rejectCommunityInvite(cid: string, uid: string) {
       },
     })
 
-    await prismadb.users.update({
+    await db.users.update({
       where: {
         uid: uid,
       },
