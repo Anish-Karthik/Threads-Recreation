@@ -1,22 +1,12 @@
 "use client"
 
-import React from "react"
+import { memo, useCallback } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@clerk/nextjs"
 
-import {
-  acceptUserRequest,
-  addModerator,
-  rejectUserRequest,
-  removeModerator,
-  removeUserFromCommunity,
-} from "@/lib/actions/community.actions"
-import {
-  acceptCommunityInvite,
-  rejectCommunityInvite,
-} from "@/lib/actions/user.actions"
 import { Button } from "@/components/ui/button"
+import { trpc } from "@/app/_trpc/client"
 
 import JoinOrLeave from "../thread-actions/JoinOrLeave"
 
@@ -51,6 +41,59 @@ const UserCard = ({
 }: UserCardProps) => {
   const router = useRouter()
   const currentUser = useAuth()
+
+  const acceptUserRequestHook = trpc.community.user.request.accept.useMutation()
+  const addModeratorHook = trpc.community.user.moderator.add.useMutation()
+  const rejectUserRequestHook = trpc.community.user.request.reject.useMutation()
+  const removeModeratorHook = trpc.community.user.moderator.remove.useMutation()
+  const removeUserFromCommunityHook = trpc.community.user.remove.useMutation()
+  const acceptCommunityInviteHook =
+    trpc.user.community.invite.accept.useMutation()
+  const rejectCommunityInviteHook =
+    trpc.user.community.invite.reject.useMutation()
+
+  const acceptUserRequest = useCallback(
+    async (cid: string, uid: string) => {
+      await acceptUserRequestHook.mutateAsync({ cid, uid })
+    },
+    [acceptUserRequestHook]
+  )
+  const addModerator = useCallback(
+    async (cid: string, uid: string) => {
+      await addModeratorHook.mutateAsync({ cid, uid })
+    },
+    [addModeratorHook]
+  )
+  const rejectUserRequest = useCallback(
+    async (cid: string, uid: string) => {
+      await rejectUserRequestHook.mutateAsync({ cid, uid })
+    },
+    [rejectUserRequestHook]
+  )
+  const removeModerator = useCallback(
+    async (cid: string, uid: string) => {
+      await removeModeratorHook.mutateAsync({ cid, uid })
+    },
+    [removeModeratorHook]
+  )
+  const removeUserFromCommunity = useCallback(
+    async (cid: string, uid: string) => {
+      await removeUserFromCommunityHook.mutateAsync({ cid, uid })
+    },
+    [removeUserFromCommunityHook]
+  )
+  const acceptCommunityInvite = useCallback(
+    async (cid: string, uid: string) => {
+      await acceptCommunityInviteHook.mutateAsync({ cid, uid })
+    },
+    [acceptCommunityInviteHook]
+  )
+  const rejectCommunityInvite = useCallback(
+    async (cid: string, uid: string) => {
+      await rejectCommunityInviteHook.mutateAsync({ cid, uid })
+    },
+    [rejectCommunityInviteHook]
+  )
 
   const isCommunity = personType === "Community"
   return (
@@ -159,4 +202,4 @@ const UserCard = ({
   )
 }
 
-export default UserCard
+export default memo(UserCard)

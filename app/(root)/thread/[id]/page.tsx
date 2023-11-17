@@ -3,22 +3,22 @@ import { redirect } from "next/navigation"
 import { currentUser } from "@clerk/nextjs"
 
 import { fetchThreadById } from "@/lib/actions/thread.actions"
-import { fetchUser } from "@/lib/actions/user.actions"
 import ThreadCard from "@/components/cards/ThreadCard"
 import Comment from "@/components/forms/Comment"
+import { serverClient } from "@/app/_trpc/serverClient"
 
 const ThreadDetailsPage = async ({ params }: { params: { id: string } }) => {
   const { id } = params
-  if (!id) return null
+  if (!id) return redirect("/") // TODO 404 page
+
+  const thread = await fetchThreadById(id)
+  if (!thread) redirect("/") // TODO 404 page
 
   const user = await currentUser()
   if (!user) redirect("/sign-in")
 
-  const userInfo = await fetchUser(user.id)
+  const userInfo = await serverClient.user.get(user.id)
   if (!userInfo?.onboarded) redirect("/onboarding")
-
-  const thread = await fetchThreadById(id)
-  if (!thread) redirect("/")
 
   return (
     <section className="relative">

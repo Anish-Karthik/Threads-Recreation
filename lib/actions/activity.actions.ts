@@ -1,50 +1,24 @@
-"use server"
-
-import { revalidatePath } from "next/cache"
-
 import db from "@/lib/db"
 
-export async function getActivityRepliedToUser(userId: string) {
+export async function getRepliesToUserThreads(userId: string) {
   try {
-    // connectToDB();
-
-    // find all threads and comments by user
-
-    const userThreads = await db.threads.findMany({
-      where: {
-        authorId: userId,
-      },
-      select: {
-        children: {
-          select: {
-            id: true,
-          },
-        },
-      },
-    })
-    // get all child thread ids, and remove duplicates and flatten array to 1d
-
-    const childThreadIds = userThreads
-      .map((userThread) => {
-        return userThread.children.map((child) => child.id)
-      })
-      .flat()
-
     const replies = await db.threads.findMany({
       where: {
-        id: { in: childThreadIds },
-      },
-      select: {
-        id: true,
-        author: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
+        OR: [
+          {
+            authorId: userId,
           },
-        },
-        createdAt: true,
-        parentId: true,
+          {
+            children: {
+              some: {
+                authorId: userId,
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        author: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -57,9 +31,8 @@ export async function getActivityRepliedToUser(userId: string) {
   }
 }
 
-export async function getActivityLikedToUser(userId: string) {
+export async function getLikedUserThreads(userId: string) {
   try {
-    // find users who liked the user's threads
     if (!userId) {
       throw new Error("User not found")
     }
@@ -95,24 +68,12 @@ export async function getActivityLikedToUser(userId: string) {
   }
 }
 
-export async function getActivityLikedByUser(userId: string) {
+export async function getThreadsLikedByUser(userId: string) {
   try {
-    // find threads whose parent is not null, ans select only parentThreads
-    const likedThreadIds = (
-      await db.threads.findMany({
-        where: {
-          authorId: userId,
-          parentId: null,
-        },
-        select: {
-          id: true,
-        },
-      })
-    ).map((thread) => thread.id)
-
     const liked = await db.threads.findMany({
       where: {
-        id: { in: likedThreadIds },
+        authorId: userId,
+        parentId: null,
       },
       include: {
         author: true,

@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
 
-import { createThread } from "@/lib/actions/thread.actions"
 import { ThreadValidation } from "@/lib/validations/thread"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { trpc } from "@/app/_trpc/client"
 
 import { CustomTextArea } from "../form-fields"
 import Editor from "../shared/Editor"
@@ -42,6 +42,7 @@ const PostThread = ({
   const router = useRouter()
   const pathname = usePathname()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const createThread = trpc.thread.create.useMutation()
 
   const form = useForm({
     resolver: zodResolver(ThreadValidation),
@@ -54,7 +55,7 @@ const PostThread = ({
   async function onSubmit(values: z.infer<typeof ThreadValidation>) {
     setIsSubmitting(true)
     try {
-      await createThread({
+      await createThread.mutateAsync({
         text: values.thread,
         author: userId,
         communityId:
@@ -81,12 +82,15 @@ const PostThread = ({
           name="communityId"
           communities={communities}
         />
-        {/* <CustomTextArea form={form} name="thread" alt="content" /> */}
-        <Editor
-          onChange={(value) => form.setValue("thread", value)}
-          initialContent={form.watch("thread")}
-          editable={true}
-        />
+        {isComment ? (
+          <CustomTextArea form={form} name="thread" alt="content" />
+        ) : (
+          <Editor
+            onChange={(value) => form.setValue("thread", value)}
+            initialContent={form.watch("thread")}
+            editable={true}
+          />
+        )}
         <Button
           type="submit"
           className="bg-primary-500"

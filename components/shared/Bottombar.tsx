@@ -1,15 +1,13 @@
 "use client"
 
-import React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { sidebarLinks } from "@/constants"
 import { useAuth } from "@clerk/nextjs"
 
 function Bottombar() {
   const { userId } = useAuth()
-  const router = useRouter()
   const pathname = usePathname()
   return (
     <section className="bottombar">

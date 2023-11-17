@@ -1,10 +1,8 @@
-"use server"
-
 import { revalidatePath } from "next/cache"
 
 import db from "@/lib/db"
 
-import { getActivityLikedByUser } from "./activity.actions"
+import { getThreadsLikedByUser } from "./activity.actions"
 import {
   addMemberToCommunity,
   deleteCommunity,
@@ -213,7 +211,7 @@ export async function deleteUser(uid: string, path: string) {
     })
 
     // Delete user's liked threads
-    const userLikedThreads = await getActivityLikedByUser(user.id)
+    const userLikedThreads = await getThreadsLikedByUser(user.id)
     userLikedThreads.forEach(async (thread) => {
       await db.threads.update({
         where: {

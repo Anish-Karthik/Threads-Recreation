@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation"
 import { currentUser } from "@clerk/nextjs"
 
-import { fetchUser } from "@/lib/actions/user.actions"
 import CreateCommunity from "@/components/forms/CreateCommunity"
+import { serverClient } from "@/app/_trpc/serverClient"
 
 async function CreateCommmunityPage() {
   const user = await currentUser()
 
-  if (!user) return null
+  if (!user) return redirect("/sign-in")
 
-  const userInfo = await fetchUser(user.id)
+  const userInfo = await serverClient.user.get(user.id)
 
   if (!userInfo?.onboarded) redirect("/onboarding")
 

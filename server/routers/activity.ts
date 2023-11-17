@@ -6,7 +6,7 @@ import db from "@/lib/db"
 import { publicProcedure, router } from "../trpc"
 
 export const activityRouter = router({
-  getActivityRepliedToUser: publicProcedure
+  getRepliesToUserThreads: publicProcedure
     .input(z.string())
     .query(async ({ input }) => {
       try {
@@ -57,7 +57,7 @@ export const activityRouter = router({
       }
     }),
 
-  getActivityLikedToUser: publicProcedure
+  getLikedUserThreads: publicProcedure
     .input(z.string())
     .query(async ({ input }) => {
       try {
@@ -96,7 +96,7 @@ export const activityRouter = router({
       }
     }),
 
-  getActivityLikedByUser: publicProcedure
+  getThreadsLikedByUser: publicProcedure
     .input(z.string())
     .query(async ({ input }) => {
       try {

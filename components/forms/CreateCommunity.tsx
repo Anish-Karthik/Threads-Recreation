@@ -1,7 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import Image from "next/image"
+import React, { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { communities } from "@prisma/client"
@@ -9,10 +8,6 @@ import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
 
-import {
-  createCommunity,
-  updateCommunityInfo,
-} from "@/lib/actions/community.actions"
 import { useUploadThing } from "@/lib/hooks/uploadthing"
 import { isBase64Image } from "@/lib/utils"
 import { CommunityValidation } from "@/lib/validations/community"
@@ -20,7 +15,6 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -33,14 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+import { trpc } from "@/app/_trpc/client"
 
 import {
   CustomInputField,
   CustomProfilePhoto,
   CustomTextArea,
 } from "../form-fields"
-import { Input } from "../ui/input"
 
 const CreateCommunity = ({
   userId,
@@ -53,7 +46,8 @@ const CreateCommunity = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { startUpload } = useUploadThing("media")
   const router = useRouter()
-  const pathname = usePathname()
+  const updateCommunityInfo = trpc.community.update.useMutation()
+  const createCommunity = trpc.community.create.useMutation()
 
   const form = useForm({
     resolver: zodResolver(CommunityValidation),
@@ -97,14 +91,13 @@ const CreateCommunity = ({
 
     if (hasImageChanged) {
       const imgRes = await startUpload(files)
-      // TODO: deprecated
       if (imgRes && imgRes[0].url) {
         values.image = imgRes[0].url
       }
     }
     try {
       if (communityDetails) {
-        const updatedCommunity = await updateCommunityInfo({
+        const updatedCommunity = await updateCommunityInfo.mutateAsync({
           cid: communityDetails.cid,
           name: values.name,
           image: values.image,
@@ -114,7 +107,7 @@ const CreateCommunity = ({
         router.push(`/communities/${updatedCommunity.cid}`)
         toast.success("Community Updated Successfully")
       } else {
-        const newCommunity = await createCommunity({
+        const newCommunity = await createCommunity.mutateAsync({
           name: values.name,
           cid: values.cid,
           image: values.image,

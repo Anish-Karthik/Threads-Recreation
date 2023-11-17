@@ -1,41 +1,27 @@
-import React from "react"
-import Image from "next/image"
 import { redirect } from "next/navigation"
-import { communityTabs } from "@/constants"
 import { currentUser } from "@clerk/nextjs"
 
-import {
-  fetchCommunityDetails,
-  fetchRequestedUsers,
-  isCommunityMember,
-  isCommunityModerator,
-  isPendingRequest,
-} from "@/lib/actions/community.actions"
-import { fetchUser } from "@/lib/actions/user.actions"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import UserCard from "@/components/cards/UserCard"
 import ProfileHeader from "@/components/shared/ProfileHeader"
-import ThreadsTab from "@/components/shared/ThreadsTab"
+import CommunityTabs from "@/components/tabs/community-tabs"
+import { serverClient } from "@/app/_trpc/serverClient"
 
 const CommunityPage = async ({ params }: { params: { id: string } }) => {
   const user = await currentUser()
-  if (!user) return null
-  const userInfo = await fetchUser(user.id)
-  if (!userInfo) return redirect("/onboarding")
-  if (!userInfo?.onboarded) redirect("/onboarding")
-  const isMember = await isCommunityMember(params.id, userInfo.id)
+  if (!user) return redirect("/sign-in")
 
-  const communityDetails = await fetchCommunityDetails(params.id)
+  const userInfo = await serverClient.user.get(user.id)
+  if (!userInfo || !userInfo.onboarded) return redirect("/onboarding")
+
+  const communityDetails = await serverClient.community.get(params.id)
   if (!communityDetails) return redirect("/")
-  const userRequests = await fetchRequestedUsers(communityDetails.cid)
-  const isModerator = await isCommunityModerator(
-    communityDetails.cid,
-    userInfo.uid
+
+  const isMember = userInfo.communityIds.includes(communityDetails.id)
+  const isModerator = userInfo.moderatedCommunityIds.includes(
+    communityDetails.id
   )
-  const pendingRequest = await isPendingRequest(
-    communityDetails.cid,
-    userInfo.uid
-  )
+  const joinRequests = communityDetails.requests
+  const pendingRequest = communityDetails.requestsIds.includes(userInfo.id)
+
   return (
     <section>
       <ProfileHeader
@@ -53,80 +39,11 @@ const CommunityPage = async ({ params }: { params: { id: string } }) => {
       />
 
       <div className="mt-9">
-        <Tabs defaultValue="threads" className="w-full">
-          <TabsList className="tab">
-            {communityTabs.map((tab) => {
-              if (tab.label === "Requests" && !isModerator) {
-                return <></>
-              }
-              return (
-                <TabsTrigger key={tab.label} value={tab.value} className="tab">
-                  <Image
-                    src={tab.icon}
-                    alt={tab.label}
-                    width={24}
-                    height={24}
-                    className="object-contain"
-                  />
-                  <p className="max-sm:hidden">{tab.label}</p>
-                  {communityDetails[tab.value]?.length > 0 && (
-                    <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">
-                      {communityDetails[tab.value].length}
-                    </p>
-                  )}
-                </TabsTrigger>
-              )
-            })}
-          </TabsList>
-
-          <TabsContent value={"threads"} className="w-full text-light-1">
-            <ThreadsTab
-              currentUserId={user.id}
-              accountId={communityDetails.cid}
-              accountType="Community"
-            />
-          </TabsContent>
-          <TabsContent value={"members"} className="w-full text-light-1">
-            <section className="mt-9 flex flex-col gap-10">
-              {communityDetails.members.map((member) => (
-                <UserCard
-                  key={member.uid}
-                  id={member.uid}
-                  name={member.name}
-                  username={member.username}
-                  imgUrl={member.image}
-                  personType="User"
-                  userId={member.uid}
-                  communityId={communityDetails.cid}
-                  isMember={true}
-                  isModerator={member.moderatedCommunityIds.includes(
-                    communityDetails.id
-                  )}
-                  isCreator={member.id === communityDetails.createdBy.id}
-                  viewerIsModerator={isModerator}
-                />
-              ))}
-            </section>
-          </TabsContent>
-          {isModerator && (
-            <TabsContent value={"requests"} className="w-full text-light-1">
-              {userRequests &&
-                userRequests.map((requestedUser) => (
-                  <UserCard
-                    key={requestedUser.id}
-                    id={requestedUser.uid}
-                    name={requestedUser.name}
-                    username={requestedUser.username}
-                    imgUrl={requestedUser.image}
-                    personType="User"
-                    inviteType="Requests"
-                    communityId={communityDetails.cid}
-                    userId={requestedUser.uid}
-                  />
-                ))}
-            </TabsContent>
-          )}
-        </Tabs>
+        <CommunityTabs
+          communityDetails={communityDetails}
+          isModerator={isModerator}
+          joinRequests={joinRequests}
+        />
       </div>
     </section>
   )

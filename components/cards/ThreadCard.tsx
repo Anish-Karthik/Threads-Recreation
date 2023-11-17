@@ -1,4 +1,3 @@
-import React from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -11,9 +10,7 @@ import {
 import { fetchUser } from "@/lib/actions/user.actions"
 import { cn, formatDateString } from "@/lib/utils"
 
-import DeleteThread from "../forms/DeleteEntity"
 import DeleteEntity from "../forms/DeleteEntity"
-import Editor from "../shared/Editor"
 import Content from "../shared/content"
 import LikeThread from "../thread-actions/LikeThread"
 import ShareThread from "../thread-actions/ShareThread"

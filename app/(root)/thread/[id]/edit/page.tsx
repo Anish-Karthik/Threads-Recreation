@@ -3,17 +3,17 @@ import { redirect } from "next/navigation"
 import { currentUser } from "@clerk/nextjs"
 
 import { fetchThreadById } from "@/lib/actions/thread.actions"
-import { fetchUser } from "@/lib/actions/user.actions"
 import EditThread from "@/components/forms/EditThread"
+import { serverClient } from "@/app/_trpc/serverClient"
 
 const EditThreadpage = async ({ params }: { params: { id: string } }) => {
   const { id } = params
   if (!id) return null
 
   const user = await currentUser()
-  if (!user) return null
+  if (!user) return redirect("/sign-in")
 
-  const userInfo = await fetchUser(user.id)
+  const userInfo = await serverClient.user.get(user.id)
   if (!userInfo?.onboarded) redirect("/onboarding")
 
   const thread = await fetchThreadById(id)

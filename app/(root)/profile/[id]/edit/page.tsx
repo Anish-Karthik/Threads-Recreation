@@ -1,14 +1,14 @@
 import { redirect } from "next/navigation"
 import { currentUser } from "@clerk/nextjs"
 
-import { fetchUser } from "@/lib/actions/user.actions"
 import AccountProfile from "@/components/forms/AccountProfile"
+import { serverClient } from "@/app/_trpc/serverClient"
 
 const ProfilePage = async ({ params }: { params: { id: string } }) => {
   const user = await currentUser()
   if (!user) redirect("/")
 
-  const userInfo = await fetchUser(params.id)
+  const userInfo = await serverClient.user.get(params.id)
   if (!userInfo) redirect("/")
   if (!userInfo?.onboarded) redirect("/onboarding")
 

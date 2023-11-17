@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "../ui/button"
@@ -52,4 +53,4 @@ function Pagination({ pageNumber, isNext, path }: Props) {
   )
 }
 
-export default Pagination
+export default memo(Pagination)

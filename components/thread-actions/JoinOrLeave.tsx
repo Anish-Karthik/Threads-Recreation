@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import { memo, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
 
-import { cn } from "@/lib/utils"
 import { InviteValidation } from "@/lib/validations/community"
 import { Button } from "@/components/ui/button"
 import {
@@ -158,4 +157,4 @@ const JoinOrLeave = ({
   )
 }
 
-export default JoinOrLeave
+export default memo(JoinOrLeave)

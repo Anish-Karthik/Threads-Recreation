@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation"
 import { currentUser } from "@clerk/nextjs"
 
-import { fetchUser } from "@/lib/actions/user.actions"
 import AccountProfile from "@/components/forms/AccountProfile"
+import { serverClient } from "@/app/_trpc/serverClient"
 
 interface UserProps {
   _id?: string
@@ -15,10 +15,10 @@ interface UserProps {
 
 async function Page() {
   const user = await currentUser()
-  if (!user) return null // to avoid typescript warnings
+  if (!user) return redirect("/sign-in") // to avoid typescript warnings
 
   // check if user has onboarded
-  const userInfo = await fetchUser(user.id)
+  const userInfo = await serverClient.user.get(user.id)
   if (userInfo?.onboarded) redirect("/")
 
   const userData = {

@@ -7,12 +7,12 @@ import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
 
-import { updateUser } from "@/lib/actions/user.actions"
 import { useUploadThing } from "@/lib/hooks/uploadthing"
 import { isBase64Image } from "@/lib/utils"
 import { UserValidation } from "@/lib/validations/user"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
+import { trpc } from "@/app/_trpc/client"
 
 import {
   CustomInputField,
@@ -40,6 +40,7 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
   const { startUpload } = useUploadThing("media")
   const router = useRouter()
   const pathname = usePathname()
+  const updateUser = trpc.user.update.useMutation()
 
   const form = useForm({
     resolver: zodResolver(UserValidation),
@@ -88,7 +89,7 @@ const AccountProfile = ({ user, btnTitle }: AccountProfileProps) => {
         }
       }
 
-      await updateUser({
+      await updateUser.mutateAsync({
         userId: user.id,
         username: values.username,
         name: values.name,

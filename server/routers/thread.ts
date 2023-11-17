@@ -8,7 +8,7 @@ import db from "@/lib/db"
 import { publicProcedure, router } from "../trpc"
 
 export const threadRouter = router({
-  createThread: publicProcedure
+  create: publicProcedure
     .input(
       z.object({
         text: z.string(),
@@ -92,7 +92,7 @@ export const threadRouter = router({
       }
     }),
 
-  fetchThreads: publicProcedure
+  getAll: publicProcedure
     .input(
       z.object({
         pageNumber: z.number().optional(),
@@ -138,7 +138,7 @@ export const threadRouter = router({
       } catch (error) {}
     }),
 
-  fetchThreadById: publicProcedure
+  get: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       const { id } = input
@@ -172,7 +172,7 @@ export const threadRouter = router({
       }
     }),
 
-  addCommentToThread: publicProcedure
+  addComment: publicProcedure
     .input(
       z.object({
         threadId: z.string(),
@@ -228,7 +228,7 @@ export const threadRouter = router({
       }
     }),
 
-  deleteThread: publicProcedure
+  delete: publicProcedure
     .input(
       z.object({
         threadId: z.string(),
@@ -325,7 +325,7 @@ export const threadRouter = router({
       }
     }),
 
-  editThread: publicProcedure
+  update: publicProcedure
     .input(
       z.object({
         threadId: z.string(),
@@ -355,7 +355,7 @@ export const threadRouter = router({
       }
     }),
 
-  fetchLikedThreads: publicProcedure
+  getLiked: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ input }) => {
       const { userId } = input
@@ -388,7 +388,7 @@ export const threadRouter = router({
       }
     }),
 
-  toggleLikeThread: publicProcedure
+  toggleLike: publicProcedure
     .input(
       z.object({
         threadId: z.string(),
@@ -475,7 +475,7 @@ export const threadRouter = router({
       }
     }),
 
-  isLikedThread: publicProcedure
+  isLiked: publicProcedure
     .input(
       z.object({
         threadId: z.string(),

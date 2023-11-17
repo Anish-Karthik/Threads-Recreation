@@ -1,10 +1,9 @@
-import { redirect } from "next/navigation"
 import { currentUser } from "@clerk/nextjs"
 
-import { fetchUser, fetchUsers } from "@/lib/actions/user.actions"
 import UserCard from "@/components/cards/UserCard"
 import Pagination from "@/components/shared/Pagination"
 import Searchbar from "@/components/shared/Searchbar"
+import { serverClient } from "@/app/_trpc/serverClient"
 
 const SearchPage = async ({
   searchParams,
@@ -12,7 +11,7 @@ const SearchPage = async ({
   searchParams: { [key: string]: string | undefined }
 }) => {
   const user = await currentUser()
-  const result = await fetchUsers({
+  const result = await serverClient.user.getAll({
     userId: user?.id || "",
     searchString: searchParams.q || "",
     pageNumber: searchParams.page ? +searchParams.page : 1,

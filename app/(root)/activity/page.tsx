@@ -4,22 +4,21 @@ import { redirect } from "next/navigation"
 import { currentUser } from "@clerk/nextjs"
 
 import {
-  getActivityLikedToUser,
-  getActivityRepliedToUser,
+  getLikedUserThreads,
+  getRepliesToUserThreads,
 } from "@/lib/actions/activity.actions"
-import { fetchUser } from "@/lib/actions/user.actions"
+import { serverClient } from "@/app/_trpc/serverClient"
 
 const ActivityPage = async () => {
   const user = await currentUser()
 
-  if (!user) return null
+  if (!user) return redirect("/sign-in")
 
-  const userInfo = await fetchUser(user.id)
+  const userInfo = await serverClient.user.get(user.id)
   if (!userInfo?.onboarded) redirect("/onboarding")
 
-  // getActivity or getNotifications
-  const replies = await getActivityRepliedToUser(userInfo.id)
-  const LikedThreads = (await getActivityLikedToUser(userInfo.id)) || []
+  const replies = await getRepliesToUserThreads(userInfo.id)
+  const LikedThreads = (await getLikedUserThreads(userInfo.id)) || []
 
   return (
     <section>

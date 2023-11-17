@@ -8,19 +8,18 @@ import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
 
-import { addCommentToThread } from "@/lib/actions/thread.actions"
 import { CommentValidation } from "@/lib/validations/thread"
 import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { trpc } from "@/app/_trpc/client"
 
 interface CommentProps {
   threadId: string
@@ -32,6 +31,7 @@ const Comment = ({ threadId, currentUserId, currentUserImg }: CommentProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
+  const addCommentToThread = trpc.thread.addComment.useMutation()
 
   const form = useForm({
     resolver: zodResolver(CommentValidation),
@@ -42,7 +42,7 @@ const Comment = ({ threadId, currentUserId, currentUserImg }: CommentProps) => {
   async function onSubmit(values: z.infer<typeof CommentValidation>) {
     setIsSubmitting(true)
     try {
-      await addCommentToThread({
+      await addCommentToThread.mutateAsync({
         threadId,
         userId: JSON.parse(currentUserId),
         commentText: values.thread,

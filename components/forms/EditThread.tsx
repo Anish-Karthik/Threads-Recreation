@@ -7,10 +7,10 @@ import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
 
-import { editThread } from "@/lib/actions/thread.actions"
 import { EditThreadValidation } from "@/lib/validations/thread"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
+import { trpc } from "@/app/_trpc/client"
 
 import { CustomTextArea } from "../form-fields"
 import Editor from "../shared/Editor"
@@ -29,6 +29,7 @@ const EditThread = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
+  const editThread = trpc.thread.update.useMutation()
 
   const form = useForm({
     resolver: zodResolver(EditThreadValidation),
@@ -40,7 +41,7 @@ const EditThread = ({
   async function onSubmit(values: z.infer<typeof EditThreadValidation>) {
     setIsSubmitting(true)
     try {
-      await editThread({
+      await editThread.mutateAsync({
         text: values.text,
         threadId: threadId,
         path: pathname,

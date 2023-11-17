@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button"
 import CommunityCard from "@/components/cards/CommunityCard"
 import Pagination from "@/components/shared/Pagination"
 import Searchbar from "@/components/shared/Searchbar"
+import { serverClient } from "@/app/_trpc/serverClient"
 
 const CommunityPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined }
 }) => {
-  const result = await fetchCommunities({
+  const result = await serverClient.community.getAll({
     searchString: searchParams?.q || "",
     pageNumber: searchParams?.page ? +searchParams.page : 1,
     pageSize: 6,

@@ -1,13 +1,11 @@
 "use client"
 
-import React from "react"
+import { memo } from "react"
 import Image from "next/image"
 import { profileTabs } from "@/constants"
 import { useAuth } from "@clerk/nextjs"
-import { User } from "@clerk/nextjs/server"
 import { communities, users } from "@prisma/client"
 
-import { cn } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import UserCard from "@/components/cards/UserCard"
 import ThreadsTab from "@/components/shared/ThreadsTab"
@@ -103,4 +101,4 @@ const ProfileTabs = ({
   )
 }
 
-export default ProfileTabs
+export default memo(ProfileTabs)
