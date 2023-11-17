@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import { ClerkProvider } from "@clerk/nextjs"
 
 import "../globals.css"
+import { EdgeStoreProvider } from "@/lib/edgestore"
 import {
   Bottombar,
   LeftSidebar,
@@ -29,22 +30,24 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <TRPCProvider>
-        <html lang="en">
-          <body className={inter.className}>
-            <ToasterProvider />
-            <Topbar />
-            <main className="flex flex-row">
-              <LeftSidebar />
+        <EdgeStoreProvider>
+          <html lang="en">
+            <body className={inter.className}>
+              <ToasterProvider />
+              <Topbar />
+              <main className="flex flex-row">
+                <LeftSidebar />
 
-              <section className="main-container">
-                <div className="w-full max-w-4xl">{children}</div>
-              </section>
+                <section className="main-container">
+                  <div className="w-full max-w-4xl">{children}</div>
+                </section>
 
-              <RightSidebar />
-            </main>
-            <Bottombar />
-          </body>
-        </html>
+                <RightSidebar />
+              </main>
+              <Bottombar />
+            </body>
+          </html>
+        </EdgeStoreProvider>
       </TRPCProvider>
     </ClerkProvider>
   )

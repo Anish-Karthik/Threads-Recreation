@@ -8,6 +8,7 @@ const nextConfig = {
       "uploadthing.com",
       "placehold.co",
       "utfs.io",
+      "files.edgestore.dev",
     ],
     remotePatterns: [
       {

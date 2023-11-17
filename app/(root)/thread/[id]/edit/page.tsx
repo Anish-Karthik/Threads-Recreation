@@ -18,7 +18,14 @@ const EditThreadpage = async ({ params }: { params: { id: string } }) => {
 
   const thread = await fetchThreadById(id)
   if (!thread) return null
-  return <EditThread threadId={id} userId={userInfo.id} text={thread.text} />
+  return (
+    <EditThread
+      threadId={id}
+      userId={userInfo.id}
+      text={thread.text}
+      isComment={!!thread.parentId}
+    />
+  )
 }
 
 export default EditThreadpage

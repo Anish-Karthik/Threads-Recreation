@@ -28,11 +28,14 @@ import {
 } from "@/components/ui/select"
 
 import { CustomTextArea } from "../form-fields"
+import Editor from "../shared/Editor"
 
 const PostThread = ({
   userId,
   communities,
+  isComment = false,
 }: {
+  isComment?: boolean
   userId: string
   communities: communities[]
 }) => {
@@ -78,7 +81,12 @@ const PostThread = ({
           name="communityId"
           communities={communities}
         />
-        <CustomTextArea form={form} name="thread" alt="content" />
+        {/* <CustomTextArea form={form} name="thread" alt="content" /> */}
+        <Editor
+          onChange={(value) => form.setValue("thread", value)}
+          initialContent={form.watch("thread")}
+          editable={true}
+        />
         <Button
           type="submit"
           className="bg-primary-500"

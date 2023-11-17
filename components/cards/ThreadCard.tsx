@@ -13,6 +13,8 @@ import { cn, formatDateString } from "@/lib/utils"
 
 import DeleteThread from "../forms/DeleteEntity"
 import DeleteEntity from "../forms/DeleteEntity"
+import Editor from "../shared/Editor"
+import Content from "../shared/content"
 import LikeThread from "../thread-actions/LikeThread"
 import ShareThread from "../thread-actions/ShareThread"
 
@@ -111,7 +113,7 @@ const ThreadCard = async ({
               )}
             </div>
 
-            <p className="mt-2 text-small-regular text-light-2">{content}</p>
+            <Content content={content} />
 
             <div
               className={cn(
