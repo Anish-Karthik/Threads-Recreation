@@ -47,10 +47,10 @@ model threads {
 
   text String
 
-  author   users  @relation(fields: [authorId], references: [id]) //thread
+  author   users  @relation(fields: [authorId], references: [id], onDelete: Cascade) //thread
   authorId String @db.ObjectId
 
-  community   communities? @relation(fields: [communityId], references: [id]) //threads user
+  community   communities? @relation(fields: [communityId], references: [id], onDelete: Cascade) //threads user
   communityId String?      @db.ObjectId
 
   likedBy    users[]  @relation("LikedThread", fields: [likedByIds], references: [id])
@@ -72,7 +72,7 @@ model communities {
   bio      String
   joinMode String @default("open")
 
-  createdBy   users  @relation(fields: [createdById], references: [id])
+  createdBy   users  @relation(fields: [createdById], references: [id], onDelete: Cascade)
   createdById String @db.ObjectId
 
   threads threads[] //community

@@ -22,7 +22,7 @@
     "@edgestore/react": "^0.1.4",
     "@edgestore/server": "^0.1.4",
     "@hookform/resolvers": "^3.3.0",
-    "@prisma/client": "^5.4.1",
+    "@prisma/client": "^5.6.0",
     "@radix-ui/react-context-menu": "^2.1.5",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-dropdown-menu": "^2.0.6",

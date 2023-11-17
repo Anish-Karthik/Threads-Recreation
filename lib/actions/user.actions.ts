@@ -2,14 +2,6 @@ import { revalidatePath } from "next/cache"
 
 import db from "@/lib/db"
 
-import { getThreadsLikedByUser } from "./activity.actions"
-import {
-  addMemberToCommunity,
-  deleteCommunity,
-  fetchCommunityDetails,
-} from "./community.actions"
-import { deleteThread } from "./thread.actions"
-
 type UpdateUserProps = {
   userId: string
   username: string
@@ -202,50 +194,7 @@ export async function fetchUsers({
 
 export async function deleteUser(uid: string, path: string) {
   try {
-    const user = await fetchUser(uid)
-    if (!user) {
-      throw new Error("User not found")
-    }
-    // Delete user's threads
-    // TODO: Optimize this with group by get and delete, using skip
-    const userThreads = await db.threads.findMany({
-      where: {
-        authorId: user.id,
-      },
-    })
-    userThreads.forEach(async (thread) => {
-      await deleteThread(thread.id, path)
-    })
-
-    // Delete user's liked threads
-    const userLikedThreads = await getThreadsLikedByUser(user.id)
-    userLikedThreads.forEach(async (thread) => {
-      await db.threads.update({
-        where: {
-          id: thread.id,
-        },
-        data: {
-          likedBy: {
-            disconnect: {
-              id: user.id,
-            },
-          },
-        },
-      })
-    })
-
-    // TODO: Delete user created communities if no other moderators
-    const userCreatedCommunities = await db.communities.findMany({
-      where: {
-        createdById: user.id,
-      },
-    })
-
-    userCreatedCommunities.forEach(async (community) => {
-      await deleteCommunity(community.cid, path)
-    })
-
-    // Delete user
+    // TODO: Check if user thread and it's comments are deleted
     await db.users.delete({
       where: {
         uid,
@@ -280,20 +229,9 @@ export async function fetchInvitedCommunities(uid: string) {
 export async function requestToJoinCommunity(cid: string, uid: string) {
   try {
     const user = await fetchUser(uid)
-    const community = await fetchCommunityDetails(cid)
 
-    if (!community) {
-      throw new Error("Community not found")
-    }
     if (!user) {
       throw new Error("User not found")
-    }
-
-    if (community.requestsIds.includes(user.id)) {
-      throw new Error("Already requested")
-    }
-    if (community.membersIds.includes(user.id)) {
-      throw new Error("Already a member")
     }
 
     await db.communities.update({
@@ -318,12 +256,7 @@ export async function requestToJoinCommunity(cid: string, uid: string) {
 
 export async function acceptCommunityInvite(cid: string, uid: string) {
   try {
-    const community = await fetchCommunityDetails(cid)
     const user = await fetchUser(uid)
-
-    if (!community) {
-      throw new Error("Community not found")
-    }
     if (!user) {
       throw new Error("User not found")
     }
@@ -338,23 +271,13 @@ export async function acceptCommunityInvite(cid: string, uid: string) {
             id: user.id,
           },
         },
-      },
-    })
-
-    await db.users.update({
-      where: {
-        uid: uid,
-      },
-      data: {
-        invitedCommunities: {
-          disconnect: {
-            id: community.id,
+        members: {
+          connect: {
+            id: user.id,
           },
         },
       },
     })
-
-    await addMemberToCommunity(cid, uid)
 
     return { success: true }
   } catch (error) {
@@ -366,12 +289,8 @@ export async function acceptCommunityInvite(cid: string, uid: string) {
 // reject community invite
 export async function rejectCommunityInvite(cid: string, uid: string) {
   try {
-    const community = await fetchCommunityDetails(cid)
     const user = await fetchUser(uid)
 
-    if (!community) {
-      throw new Error("Community not found")
-    }
     if (!user) {
       throw new Error("User not found")
     }
@@ -384,19 +303,6 @@ export async function rejectCommunityInvite(cid: string, uid: string) {
         invites: {
           disconnect: {
             id: user.id,
-          },
-        },
-      },
-    })
-
-    await db.users.update({
-      where: {
-        uid: uid,
-      },
-      data: {
-        invitedCommunities: {
-          disconnect: {
-            id: community.id,
           },
         },
       },

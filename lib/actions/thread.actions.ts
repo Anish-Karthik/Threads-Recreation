@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache"
-import { threads, users } from "@prisma/client"
+import { communities, threads, users } from "@prisma/client"
 
 import db from "@/lib/db"
 
@@ -28,21 +28,24 @@ export async function createThread({
     if (!author) {
       throw new Error("No author provided")
     }
-    const communityIdObject = await db.communities.findUnique({
-      where: {
-        cid: communityId || "",
-      },
-      select: {
-        id: true,
-        cid: true,
-      },
-    })
-
+    let communityIdObject: string
+    if (communityId) {
+      communityIdObject = (
+        await db.communities.findUnique({
+          where: {
+            cid: communityId,
+          },
+          select: {
+            id: true,
+          },
+        })
+      )?.id
+    }
     const createdThread = await db.threads.create({
       data: {
         text,
         authorId: author,
-        communityId: communityIdObject?.id || null,
+        communityId: communityIdObject || null,
         parentId: undefined,
       },
     })
@@ -51,45 +54,6 @@ export async function createThread({
       throw new Error("Failed to create thread")
     }
 
-    const user = await db.users.findUnique({
-      where: {
-        id: author,
-      },
-      include: {
-        threads: true,
-      },
-    })
-    if (!user) {
-      throw new Error("User not found")
-    }
-
-    await db.users.update({
-      where: {
-        id: author,
-      },
-      data: {
-        threads: {
-          connect: {
-            id: createdThread.id,
-          },
-        },
-      },
-    })
-
-    if (communityIdObject) {
-      await db.communities.update({
-        where: {
-          cid: communityIdObject.cid,
-        },
-        data: {
-          threads: {
-            connect: {
-              id: createdThread.id,
-            },
-          },
-        },
-      })
-    }
     // make sure channges are reflected in the cache immediately
     revalidatePath(path)
   } catch (error: any) {
@@ -111,6 +75,7 @@ export async function fetchThreads(
         parentId: undefined,
       },
       include: {
+        // _count: true, // TODO: make this as a single query
         author: true,
         children: {
           include: {
@@ -199,16 +164,7 @@ export async function addCommentToThread({
   path,
 }: addCommentToThreadProps) {
   try {
-    const originalThread = await db.threads.findUnique({
-      where: {
-        id: threadId,
-      },
-      include: {
-        children: true,
-      },
-    })
-
-    if (!originalThread) {
+    if (!threadId) {
       throw new Error("Thread not found")
     }
     const newComment = await db.threads.create({
@@ -219,25 +175,8 @@ export async function addCommentToThread({
       },
     })
 
-    // add the new thread to the original thread's children
-    originalThread.children.push(newComment)
-
-    // Update Thread model in prisma
-
-    await db.threads.update({
-      where: {
-        id: threadId,
-      },
-      data: {
-        children: {
-          connect: {
-            id: newComment.id,
-          },
-        },
-      },
-    })
-
     revalidatePath(path)
+    return newComment
   } catch (error: any) {
     throw new Error(`Failed to fetch thread: ${error.message}`)
   }
@@ -250,7 +189,7 @@ export async function deleteThread(threadId: string, path: string) {
     }
 
     const deleteChildren = async (threadId: string) => {
-      const thread = await db.threads.findUnique({
+      const thread = await db.threads.delete({
         where: {
           id: threadId,
         },
@@ -266,62 +205,6 @@ export async function deleteThread(threadId: string, path: string) {
         for (const child of thread.children) {
           await deleteChildren(child.id)
         }
-      }
-      await db.threads.update({
-        where: {
-          id: thread.id,
-        },
-        data: {
-          children: {
-            disconnect: {
-              id: threadId,
-            },
-          },
-          likedBy: {
-            disconnect: {
-              id: threadId,
-            },
-          },
-        },
-      })
-      // remove likes from users
-
-      if (thread.likedByIds.length > 0) {
-        for (const userId of thread.likedByIds) {
-          await db.users.update({
-            where: {
-              id: userId,
-            },
-            data: {
-              likedThreads: {
-                disconnect: {
-                  id: threadId,
-                },
-              },
-            },
-          })
-        }
-      }
-      await db.threads.delete({
-        where: {
-          id: thread.id,
-        },
-      })
-
-      const communityId = thread.communityId
-      if (communityId) {
-        await db.communities.update({
-          where: {
-            id: communityId,
-          },
-          data: {
-            threads: {
-              disconnect: {
-                id: threadId,
-              },
-            },
-          },
-        })
       }
     }
 

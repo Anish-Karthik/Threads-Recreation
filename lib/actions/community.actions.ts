@@ -2,7 +2,6 @@ import { revalidatePath } from "next/cache"
 
 import db from "@/lib/db"
 
-import { deleteThread } from "./thread.actions"
 import { fetchUser } from "./user.actions"
 
 type SortOrder = "asc" | "desc"
@@ -64,30 +63,6 @@ export async function createCommunity({
         moderators: {
           connect: {
             id: user.id,
-          },
-        },
-      },
-    })
-
-    // Update User model
-    await db.users.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        communities: {
-          connect: {
-            cid: newCommunity.cid,
-          },
-        },
-        createdCommunities: {
-          connect: {
-            cid: newCommunity.cid,
-          },
-        },
-        moderatedCommunities: {
-          connect: {
-            cid: newCommunity.cid,
           },
         },
       },
@@ -258,7 +233,7 @@ export async function fetchCommunities({
       },
     })
 
-    // Count the total number of communities that match the search criteria (without pagination).
+    // Count the total number of communities that match the search criteria (without pagination). //TODO single db query _count
     const totalCommunitiesCount = await db.communities.count({
       where: {
         ...query,
@@ -281,31 +256,14 @@ export async function addMemberToCommunity(
 ) {
   try {
     // Find the community by its unique id
-    const community = await db.communities.findUnique({
-      where: {
-        cid: communityId,
-      },
-      include: {
-        members: true,
-      },
-    })
+
     // Find the user by their unique id
     const user = await fetchUser(memberId)
-
-    if (!community) {
-      throw new Error("Community not found")
-    }
     if (!user) {
       throw new Error("User not found")
     }
-
-    // Check if the user is already a member of the community
-    if (community.membersIds.includes(user.id)) {
-      throw new Error("User is already a member of the community")
-    }
-
     // Add the user's id to the members array in the community
-    await db.communities.update({
+    const community = await db.communities.update({
       where: {
         cid: communityId,
       },
@@ -328,29 +286,6 @@ export async function addMemberToCommunity(
       },
     })
 
-    // Add the community's id to the communities array in the user
-    await db.users.update({
-      where: {
-        uid: memberId,
-      },
-      data: {
-        communities: {
-          connect: {
-            id: community.id,
-          },
-        },
-        invitedCommunities: {
-          disconnect: {
-            id: community.id,
-          },
-        },
-        requestedCommunities: {
-          disconnect: {
-            id: community.id,
-          },
-        },
-      },
-    })
     return community
   } catch (error) {
     // Handle any errors
@@ -362,20 +297,11 @@ export async function addMemberToCommunity(
 export async function removeUserFromCommunity(cid: string, uid: string) {
   try {
     const user = await fetchUser(uid)
-    const community = await fetchCommunityDetails(cid)
 
     if (!user) {
       throw new Error("User not found")
     }
-
-    if (!community) {
-      throw new Error("Community not found")
-    }
-    if (!community.membersIds.includes(user.id)) {
-      throw new Error("User not member")
-    }
-
-    await db.communities.update({
+    const community = await db.communities.update({
       where: {
         cid: cid,
       },
@@ -388,24 +314,6 @@ export async function removeUserFromCommunity(cid: string, uid: string) {
         moderators: {
           disconnect: {
             id: user.id,
-          },
-        },
-      },
-    })
-
-    await db.users.update({
-      where: {
-        uid: uid,
-      },
-      data: {
-        communities: {
-          disconnect: {
-            id: community.id,
-          },
-        },
-        moderatedCommunities: {
-          disconnect: {
-            id: community.id,
           },
         },
       },
@@ -466,29 +374,8 @@ export async function updateCommunityInfo({
 
 export async function deleteCommunity(cid: string, path: string) {
   try {
-    // Find the community by its ID and delete it
-    const community = await fetchCommunityDetails(cid)
-
-    if (!community) {
-      throw new Error("Community not found")
-    }
-
     // Delete all threads associated with the community
-    // TODO: Optimize this to delete by pagination instead of all at once (if there are a lot of threads)
-    const threads = await db.threads.findMany({
-      where: {
-        communityId: community.id,
-      },
-    })
-
-    threads.forEach(async (thread) => {
-      await deleteThread(thread.id, path)
-    })
-
-    // Delete the community from the user's communities array
-    community.members.forEach(async (member) => {
-      await removeUserFromCommunity(cid, member.uid)
-    })
+    // TODO: Check if this deletes all threads and comments
 
     // Delete the community
     const deletedCommunity = await db.communities.delete({
@@ -513,24 +400,19 @@ export async function isCommunityMember(cid: string, id: string) {
       throw new Error("Community not found")
     }
 
-    return !!communities.membersIds.includes(id)
+    return (
+      !!communities.membersIds.includes(id) ||
+      communities.members.find((d) => d.uid === id)
+    )
   } catch (error) {}
 }
 
 export async function inviteUserToCommunity(cid: string, uid: string) {
   try {
-    const community = await fetchCommunityDetails(cid)
     const user = await fetchUser(uid)
-    if (!community) {
-      throw new Error("Community not found")
-    }
     if (!user) {
       throw new Error("User not found")
     }
-    if (community.invitesIds.includes(user.id))
-      throw new Error("User already invited")
-    if (community.membersIds.includes(user.id))
-      throw new Error("User already member")
 
     await db.communities.update({
       where: {
@@ -545,18 +427,6 @@ export async function inviteUserToCommunity(cid: string, uid: string) {
       },
     })
 
-    await db.users.update({
-      where: {
-        uid: uid,
-      },
-      data: {
-        invitedCommunities: {
-          connect: {
-            id: community.id,
-          },
-        },
-      },
-    })
     return { success: true }
   } catch (error) {
     console.error("Error inviting user to community: ", error)
@@ -567,19 +437,8 @@ export async function inviteUserToCommunity(cid: string, uid: string) {
 export async function acceptUserRequest(cid: string, uid: string) {
   try {
     const user = await fetchUser(uid)
-    const community = await fetchCommunityDetails(cid)
-
-    if (!community) {
-      throw new Error("Community not found")
-    }
     if (!user) {
       throw new Error("User not found")
-    }
-    if (!community.requestsIds.includes(user.id)) {
-      throw new Error("User not requested")
-    }
-    if (community.membersIds.includes(user.id)) {
-      throw new Error("User already member")
     }
 
     // update community
@@ -591,20 +450,6 @@ export async function acceptUserRequest(cid: string, uid: string) {
         requests: {
           disconnect: {
             id: user.id,
-          },
-        },
-      },
-    })
-
-    // update user
-    await db.users.update({
-      where: {
-        uid: uid,
-      },
-      data: {
-        requestedCommunities: {
-          disconnect: {
-            id: community.id,
           },
         },
       },
@@ -623,19 +468,9 @@ export async function acceptUserRequest(cid: string, uid: string) {
 export async function rejectUserRequest(cid: string, uid: string) {
   try {
     const user = await fetchUser(uid)
-    const community = await fetchCommunityDetails(cid)
 
-    if (!community) {
-      throw new Error("Community not found")
-    }
     if (!user) {
       throw new Error("User not found")
-    }
-    if (!community.requestsIds.includes(user.id)) {
-      throw new Error("User not requested")
-    }
-    if (community.membersIds.includes(user.id)) {
-      throw new Error("User already member")
     }
 
     // update community
@@ -647,20 +482,6 @@ export async function rejectUserRequest(cid: string, uid: string) {
         requests: {
           disconnect: {
             id: user.id,
-          },
-        },
-      },
-    })
-
-    // update user
-    await db.users.update({
-      where: {
-        uid: uid,
-      },
-      data: {
-        requestedCommunities: {
-          disconnect: {
-            id: community.id,
           },
         },
       },
@@ -693,17 +514,12 @@ export async function fetchRequestedUsers(cid: string) {
 
 export async function isCommunityModerator(cid: string, uid: string) {
   try {
-    const user = await fetchUser(uid)
     const community = await fetchCommunityDetails(cid)
 
     if (!community) {
       throw new Error("Community not found")
     }
-    if (!user) {
-      throw new Error("User not found")
-    }
-
-    return community.moderatorsIds.includes(user.id)
+    return community.moderators.find((d) => d.uid === uid)
   } catch (error) {
     console.error("Error checking if user is moderator: ", error)
     throw error
@@ -712,17 +528,13 @@ export async function isCommunityModerator(cid: string, uid: string) {
 
 export async function isPendingRequest(cid: string, uid: string) {
   try {
-    const user = await fetchUser(uid)
     const community = await fetchCommunityDetails(cid)
 
     if (!community) {
       throw new Error("Community not found")
     }
-    if (!user) {
-      throw new Error("User not found")
-    }
 
-    return community.requestsIds.includes(user.id)
+    return community.requests.find((d) => d.uid === uid)
   } catch (error) {
     console.error("Error checking if user is moderator: ", error)
     throw error
@@ -748,18 +560,10 @@ export async function fetchModerators(cid: string) {
 export async function addModerator(cid: string, uid: string) {
   try {
     const user = await fetchUser(uid)
-    const community = await fetchCommunityDetails(cid)
 
-    if (!community) {
-      throw new Error("Community not found")
-    }
     if (!user) {
       throw new Error("User not found")
     }
-    if (community.moderatorsIds.includes(user.id)) {
-      throw new Error("User already moderator")
-    }
-
     await db.communities.update({
       where: {
         cid: cid,
@@ -780,20 +584,11 @@ export async function addModerator(cid: string, uid: string) {
   }
 }
 
-// remove moderator
 export async function removeModerator(cid: string, uid: string) {
   try {
     const user = await fetchUser(uid)
-    const community = await fetchCommunityDetails(cid)
-
-    if (!community) {
-      throw new Error("Community not found")
-    }
     if (!user) {
       throw new Error("User not found")
-    }
-    if (!community.moderatorsIds.includes(user.id)) {
-      throw new Error("User not moderator")
     }
 
     await db.communities.update({
