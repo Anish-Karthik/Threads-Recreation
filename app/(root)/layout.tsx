@@ -11,6 +11,7 @@ import {
   Topbar,
 } from "@/components/shared/"
 import { ToasterProvider } from "@/components/shared/ToastProvider"
+import TRPCProvider from "../_trpc/Provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -26,6 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
+      <TRPCProvider>
       <html lang="en">
         <body className={inter.className}>
           <ToasterProvider />
@@ -42,6 +44,7 @@ export default function RootLayout({
           <Bottombar />
         </body>
       </html>
+      </TRPCProvider>
     </ClerkProvider>
   )
 }
