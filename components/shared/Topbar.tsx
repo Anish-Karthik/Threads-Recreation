@@ -1,7 +1,8 @@
 import React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { SignOutButton, SignedIn } from "@clerk/nextjs"
+import { SignInButton, SignOutButton, SignedIn, SignedOut } from "@clerk/nextjs"
+import { LogInIcon, LogOutIcon } from "lucide-react"
 
 function Topbar() {
   const isUserLoggedIn = true
@@ -15,16 +16,18 @@ function Topbar() {
         <div className="block md:hidden">
           <SignedIn>
             <SignOutButton>
-              <div className="flex cursor-pointer">
-                <Image
-                  src={"/assets/logout.svg"}
-                  alt="logout"
-                  width={24}
-                  height={24}
-                />
+              <div className="flex cursor-pointer text-slate-200">
+                <LogOutIcon width={24} height={24} />
               </div>
             </SignOutButton>
           </SignedIn>
+          <SignedOut>
+            <SignInButton afterSignInUrl="/" afterSignUpUrl="/">
+              <div className="flex cursor-pointer text-slate-200">
+                <LogInIcon width={24} height={24} />
+              </div>
+            </SignInButton>
+          </SignedOut>
         </div>
       </div>
     </nav>

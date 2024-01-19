@@ -5,7 +5,14 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { sidebarLinks } from "@/constants"
-import { SignOutButton, SignedIn, useAuth } from "@clerk/nextjs"
+import {
+  SignInButton,
+  SignOutButton,
+  SignedIn,
+  SignedOut,
+  useAuth,
+} from "@clerk/nextjs"
+import { LogInIcon, LogOutIcon } from "lucide-react"
 
 function LeftSidebar() {
   const router = useRouter()
@@ -41,18 +48,21 @@ function LeftSidebar() {
       </div>
       <div className="mt-10 px-6">
         <SignedIn>
-          <SignOutButton signOutCallback={() => router.push("/sign-in")}>
-            <div className="flex cursor-pointer gap-6 px-4">
-              <Image
-                src={"/assets/logout.svg"}
-                alt="logout"
-                width={24}
-                height={24}
-              />
+          <SignOutButton signOutCallback={() => router.push("/")}>
+            <div className="flex cursor-pointer gap-6 px-4 text-slate-200">
+              <LogOutIcon width={24} height={24} />
               <p className="text-light-2 max-lg:hidden">logout</p>
             </div>
           </SignOutButton>
         </SignedIn>
+        <SignedOut>
+          <SignInButton afterSignInUrl="/" afterSignUpUrl="/">
+            <div className="flex cursor-pointer gap-6 px-4 text-slate-200">
+              <LogInIcon width={24} height={24} />
+              <p className="text-light-2 max-lg:hidden">login</p>
+            </div>
+          </SignInButton>
+        </SignedOut>
       </div>
     </section>
   )
