@@ -3,7 +3,9 @@
 
 import { memo, useEffect, useState } from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { X } from "lucide-react"
+import { useDebounce } from "use-debounce"
 
 import { Input } from "../ui/input"
 
@@ -14,19 +16,18 @@ interface Props {
 
 function Searchbar({ routeType, placeHolder }: Props) {
   const router = useRouter()
-  const [search, setSearch] = useState("")
+  const searchParams = useSearchParams()
+  const [search, setSearch] = useState(searchParams.get("q") || "")
+  console.log(search, routeType)
 
-  // query after 0.3s of no input
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (search) {
-        router.push(`/${routeType}?q=` + search)
-      } else {
+    if (search) {
+      router.push(`/${routeType}?q=${search}`)
+    } else {
+      if (searchParams.get("q")) {
         router.push(`/${routeType}`)
       }
-    }, 300)
-
-    return () => clearTimeout(delayDebounceFn)
+    }
   }, [search, routeType])
 
   return (
@@ -46,9 +47,19 @@ function Searchbar({ routeType, placeHolder }: Props) {
           placeHolder ||
           `${routeType !== "search" ? "Search communities" : "Search creators"}`
         }
+        autoFocus={!!search}
         autoComplete="off"
         className="no-focus searchbar_input"
       />
+      {search && (
+        <X
+          className="my-auto cursor-pointer text-slate-600"
+          onClick={() => {
+            setSearch("")
+            router.push(`/${routeType}`)
+          }}
+        />
+      )}
     </div>
   )
 }

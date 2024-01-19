@@ -49,7 +49,7 @@ const EditThread = ({
 
       router.push(`/thread/${threadId}`)
       toast.success("Thread Edited Successfully")
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message)
       setIsSubmitting(false)
     }

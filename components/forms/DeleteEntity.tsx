@@ -39,7 +39,7 @@ export default function DeleteEntity({
       } else {
         router.push("/")
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message)
     }
   }

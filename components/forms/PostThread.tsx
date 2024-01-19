@@ -64,7 +64,7 @@ const PostThread = ({
       })
       toast.success("Thread Posted Successfully")
       router.push("/")
-    } catch (error) {
+    } catch (error: any) {
       console.log(error)
       toast.error(error.message)
       setIsSubmitting(false)

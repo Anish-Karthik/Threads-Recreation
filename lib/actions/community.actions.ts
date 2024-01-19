@@ -590,7 +590,7 @@ export async function removeModerator(cid: string, uid: string) {
     if (!user) {
       throw new Error("User not found")
     }
-   await db.communities.update({
+    await db.communities.update({
       where: {
         cid: cid,
       },
