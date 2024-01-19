@@ -32,6 +32,8 @@ const ProfilePage = async ({ params }: { params: { id: string } }) => {
 
   const result = await serverClient.user.thread.getAll(userInfo.uid)
 
+  const isNotSameUser = user.id !== params.id
+
   return (
     <section>
       <ProfileHeader
@@ -47,6 +49,7 @@ const ProfilePage = async ({ params }: { params: { id: string } }) => {
       {/* user.id !== userInfo.uid */}
       <div className="mt-9">
         <ProfileTabs
+          isNotSameUser={isNotSameUser}
           result={result}
           userInfo={visitingUser}
           communityInvites={communityInvites}

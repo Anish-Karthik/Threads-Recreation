@@ -15,38 +15,35 @@ const ProfileTabs = ({
   result,
   userInfo,
   communityInvites,
+  isNotSameUser = false,
 }: {
   result: Awaited<ReturnType<typeof fetchUserPosts>>
   userInfo: users & { communities: communities[] }
   communityInvites: communities[]
+  isNotSameUser?: boolean
 }) => {
   const { userId } = useAuth()
+  const tabs = !isNotSameUser ? profileTabs : profileTabs.slice(0, 2)
   return (
     <Tabs defaultValue="threads" className="w-full">
       <TabsList className="tab">
-        {profileTabs.map((tab) => (
-          <>
-            {tab.label === "Invites" && userId !== userInfo.uid ? (
-              <></>
-            ) : (
-              <TabsTrigger key={tab.label} value={tab.value} className="tab">
-                <Image
-                  src={tab.icon}
-                  alt={tab.label}
-                  width={24}
-                  height={24}
-                  className="object-contain"
-                />
-                <p className="max-sm:hidden">{tab.label}</p>
+        {tabs.map((tab) => (
+          <TabsTrigger key={tab.label} value={tab.value} className="tab">
+            <Image
+              src={tab.icon}
+              alt={tab.label}
+              width={24}
+              height={24}
+              className="object-contain"
+            />
+            <p className="max-sm:hidden">{tab.label}</p>
 
-                {userInfo[tab.value]?.length > 0 && (
-                  <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">
-                    {userInfo[tab.value]?.length}
-                  </p>
-                )}
-              </TabsTrigger>
+            {userInfo[tab.value]?.length > 0 && (
+              <p className="ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2">
+                {userInfo[tab.value]?.length}
+              </p>
             )}
-          </>
+          </TabsTrigger>
         ))}
       </TabsList>
 

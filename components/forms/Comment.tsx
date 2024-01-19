@@ -48,13 +48,13 @@ const Comment = ({ threadId, currentUserId, currentUserImg }: CommentProps) => {
         commentText: values.thread,
         path: pathname,
       })
-
-      router.push(pathname)
+      router.refresh()
       toast.success("Comment Posted Successfully")
     } catch (error) {
       toast.error(error.message)
-      setIsSubmitting(false)
     }
+    setIsSubmitting(false)
+    form.reset()
   }
   return (
     <Form {...form}>
