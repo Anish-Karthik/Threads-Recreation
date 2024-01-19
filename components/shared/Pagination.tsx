@@ -1,19 +1,19 @@
 "use client"
 
 import { memo } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 import { Button } from "../ui/button"
 
 interface Props {
   pageNumber: number
   isNext: boolean
-  path: string
+  path?: string
 }
 
 function Pagination({ pageNumber, isNext, path }: Props) {
   const router = useRouter()
-
+  const pathname = usePathname()
   const handleNavigation = (type: string) => {
     let nextPageNumber = pageNumber
 
@@ -24,9 +24,13 @@ function Pagination({ pageNumber, isNext, path }: Props) {
     }
 
     if (nextPageNumber > 1) {
-      router.push(`/${path}?page=${nextPageNumber}`)
+      path
+        ? router.push(`/${path}?page=${nextPageNumber}`)
+        : router.push(`${pathname}?page=${nextPageNumber}`)
     } else {
-      router.push(`/${path}`)
+      path
+        ? router.push(`/${path}`)
+        : router.push(`${pathname}?page=${nextPageNumber}`)
     }
   }
 

@@ -8,6 +8,7 @@ import { useAuth } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { trpc } from "@/app/_trpc/client"
 
+import InviteButton from "../shared/invite-button"
 import JoinOrLeave from "../thread-actions/JoinOrLeave"
 
 interface UserCardProps {
@@ -23,6 +24,7 @@ interface UserCardProps {
   isModerator?: boolean
   isCreator?: boolean
   viewerIsModerator?: boolean
+  showInviteButton?: boolean
 }
 
 const UserCard = ({
@@ -38,6 +40,7 @@ const UserCard = ({
   isModerator = false,
   isCreator = false,
   viewerIsModerator = false,
+  showInviteButton = false,
 }: UserCardProps) => {
   const router = useRouter()
   const currentUser = useAuth()
@@ -94,7 +97,7 @@ const UserCard = ({
     },
     [rejectCommunityInviteHook]
   )
-
+  console.log(communityId)
   const isCommunity = personType === "Community"
   return (
     <article className="user-card">
@@ -140,6 +143,9 @@ const UserCard = ({
       >
         View
       </Button>
+      {showInviteButton && (
+        <InviteButton communityId={communityId} userId={id} />
+      )}
 
       {inviteType && userId && communityId && (
         // Accept Invite from community (or) Accept Request from user to join community

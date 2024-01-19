@@ -25,6 +25,7 @@ const CommunityPage = async ({ params }: { params: { id: string } }) => {
   const result = await serverClient.community.thread.getAll(
     communityDetails.cid
   )
+  console.log(isModerator)
   return (
     <section>
       <ProfileHeader
@@ -39,6 +40,7 @@ const CommunityPage = async ({ params }: { params: { id: string } }) => {
         canRequest={!pendingRequest}
         isMember={isMember}
         joinMode={communityDetails.joinMode}
+        isModerator={isModerator}
       />
 
       <div className="mt-9">

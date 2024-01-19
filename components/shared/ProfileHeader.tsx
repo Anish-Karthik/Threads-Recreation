@@ -1,13 +1,15 @@
 "use client"
 
-import { memo, useCallback } from "react"
+import { useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { trpc } from "@/app/_trpc/client"
 
 import DeleteEntity from "../forms/DeleteEntity"
 import JoinOrLeave from "../thread-actions/JoinOrLeave"
+import { Button } from "../ui/button"
 
 interface ProfileHeaderProps {
   accountId: string
@@ -22,6 +24,7 @@ interface ProfileHeaderProps {
   canRequest?: boolean
   notJoinedCommunities?: string[]
   joinMode?: string
+  isModerator?: boolean
 }
 
 const ProfileHeader = ({
@@ -37,7 +40,9 @@ const ProfileHeader = ({
   canRequest = true,
   notJoinedCommunities = [],
   joinMode = "open",
+  isModerator = false,
 }: ProfileHeaderProps) => {
+  const router = useRouter()
   const addMemberToCommunityHook = trpc.community.user.add.useMutation()
   const deleteCommunityHook = trpc.community.delete.useMutation()
   const inviteUserToCommunityHook = trpc.community.user.invite.useMutation()
@@ -83,6 +88,8 @@ const ProfileHeader = ({
     },
     [requestToJoinCommunityHook]
   )
+
+  console.log(isModerator)
 
   return (
     <section className="flex w-full flex-col justify-start">
@@ -159,13 +166,26 @@ const ProfileHeader = ({
 
           {type === "Community" &&
             (isMember ? (
-              <JoinOrLeave
-                isMember={isMember}
-                communityId={accountId}
-                memberId={authUserId}
-                onActionCallback={removeUserFromCommunity}
-                action="Leave"
-              />
+              <div className="flex gap-2 max-sm:flex-col">
+                <JoinOrLeave
+                  isMember={isMember}
+                  communityId={accountId}
+                  memberId={authUserId}
+                  onActionCallback={removeUserFromCommunity}
+                  action="Leave"
+                />
+                {isModerator && (
+                  <Button
+                    variant="userbtn"
+                    onClick={() =>
+                      router.push(`/communities/${accountId}/invite`)
+                    }
+                    className="bg-red-1 text-light-1"
+                  >
+                    Invite
+                  </Button>
+                )}
+              </div>
             ) : (
               joinMode === "open" && (
                 <JoinOrLeave

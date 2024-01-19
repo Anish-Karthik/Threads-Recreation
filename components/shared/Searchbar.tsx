@@ -3,29 +3,32 @@
 
 import { memo, useEffect, useState } from "react"
 import Image from "next/image"
-import { useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { X } from "lucide-react"
 import { useDebounce } from "use-debounce"
 
 import { Input } from "../ui/input"
 
 interface Props {
-  routeType: string
+  routeType?: string
   placeHolder?: string
 }
 
 function Searchbar({ routeType, placeHolder }: Props) {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(searchParams.get("q") || "")
   console.log(search, routeType)
 
   useEffect(() => {
     if (search) {
-      router.push(`/${routeType}?q=${search}`)
+      routeType
+        ? router.push(`/${routeType}?q=${search}`)
+        : router.push(`${pathname}?q=${search}`)
     } else {
       if (searchParams.get("q")) {
-        router.push(`/${routeType}`)
+        routeType ? router.push(`/${routeType}`) : router.push(`${pathname}`)
       }
     }
   }, [search, routeType])

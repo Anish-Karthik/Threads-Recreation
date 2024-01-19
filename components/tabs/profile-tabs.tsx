@@ -24,6 +24,7 @@ const ProfileTabs = ({
 }) => {
   const { userId } = useAuth()
   const tabs = !isNotSameUser ? profileTabs : profileTabs.slice(0, 2)
+
   return (
     <Tabs defaultValue="threads" className="w-full">
       <TabsList className="tab">

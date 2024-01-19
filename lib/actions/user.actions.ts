@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache"
+import { Prisma } from "@prisma/client"
 
 import db from "@/lib/db"
 
@@ -115,37 +116,19 @@ export async function fetchUsers({
   pageNumber = 1,
   pageSize = 20,
   sortBy = "desc",
+  communityId,
 }: {
   userId: string
   searchString?: string
   pageNumber?: number
   pageSize?: number
   sortBy?: "asc" | "desc"
+  communityId?: string
 }) {
   try {
     const skipAmount = (pageNumber - 1) * pageSize
-
-    type QueryType = {
-      OR: [
-        {
-          name: {
-            contains: string
-            mode: "insensitive"
-          }
-        },
-        {
-          username: {
-            contains: string
-            mode: "insensitive"
-          }
-        }
-      ]
-      NOT: {
-        uid: string
-      }
-    }
-
-    const query: QueryType = {
+    console.log(communityId)
+    const query: Prisma.usersWhereInput = {
       OR: [
         {
           name: {
@@ -163,10 +146,20 @@ export async function fetchUsers({
       NOT: {
         uid: userId,
       },
+      communities: {
+        some: {
+          id: communityId,
+        },
+      },
+      invitedCommunities: {
+        some: {
+          id: communityId,
+        },
+      },
     }
 
     const users = await db.users.findMany({
-      where: query as typeof query,
+      where: query,
       select: {
         uid: true,
         name: true,

@@ -51,7 +51,7 @@ const ProfilePage = async ({ params }: { params: { id: string } }) => {
         <ProfileTabs
           isNotSameUser={isNotSameUser}
           result={result}
-          userInfo={visitingUser}
+          userInfo={userInfo}
           communityInvites={communityInvites}
         />
       </div>

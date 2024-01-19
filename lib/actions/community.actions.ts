@@ -413,8 +413,9 @@ export async function inviteUserToCommunity(cid: string, uid: string) {
     if (!user) {
       throw new Error("User not found")
     }
+    console.log("user", user)
 
-    await db.communities.update({
+    const res = await db.communities.update({
       where: {
         cid: cid,
       },
@@ -426,6 +427,8 @@ export async function inviteUserToCommunity(cid: string, uid: string) {
         },
       },
     })
+
+    console.log("res", res)
 
     return { success: true }
   } catch (error) {
