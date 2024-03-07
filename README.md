@@ -16,10 +16,10 @@
   <li>Added Comment/Reply to Thread</li>
   <li>Created Profile Card and Profile Page</li>
   <li>Added Activity Page for replies</li>
-  <h4><b>Community Additional Features (Using Clerk Organizations)</b></h4>
+  <h4><b>Community Additional Features (without Using Clerk Organizations)</b></h4>
   <ul> 
     <li>Added Clerk Organizations and webhooks</li>
-    <li>Server Actions for Community CRUD</li>
+    <li>TRPC for Community CRUD</li>
     <li>Created Community Card and Community Page</li>
   </ul>
   <br>
