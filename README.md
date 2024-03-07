@@ -45,6 +45,7 @@
     <li>Implemented community invite to user</li>
     <li>Implemented joinType for community</li>
     <li>Implement add/remove moderator</li>
+    <li>Added state manager - Recoil</li>
   </ul>
   <br>
 </ul>
@@ -58,5 +59,4 @@
   <li>Implement auto assign any moderator as creator if creator leaves or account is deleted</li>
   <li>May change database from Mongodb to SQL</li>
   <li>May Implement GraphQL for efficient querying</li>
-  <li>May add state management using Recoil/Redux</li>
 </ul>
